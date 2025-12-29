@@ -1,117 +1,103 @@
 # support-portal-web
 
-This project is a **single-page web application** (SPA) that behaves like a real SaaS product from a user and support perspective.
+This project is a simple web application that behaves like a real SaaS product from a customer support point of view.
 
-Users log in, stay logged in through sessions, and see different parts of the app depending on their role. The frontend and backend are separate applications, which mirrors how many real production systems work and how many real customer issues arise.
+Users log in, stay logged in using sessions, and see different things depending on who they are. The goal of this project is not to show programming skills, but to show how common user issues can be understood, identified, and explained.
 
-This project is designed to demonstrate **application support skills**, not just development.
+This mirrors the kinds of problems customers complain about every day.
 
 ## Purpose
 
-This project exists to showcase skills that are directly relevant to **Tier 1 / Tier 2 application support**, including:
+This project exists to demonstrate skills relevant to Tier 1, customer-facing application support roles.
 
-- Understanding how modern web apps are structured
-- Troubleshooting login and logout issues
-- Identifying session and authentication problems
-- Understanding why users see different data based on role
-- Knowing when an issue is frontend-related vs backend-related
+Specifically:
 
-It reflects the kinds of problems customers report, such as:
-- “I was logged in, then suddenly I wasn’t”
-- “I can log in but can’t access what I’m supposed to”
-- “It works for one user but not another”
+- Understanding why users can or cannot log in
+- Understanding why a user might suddenly be logged out
+- Understanding why different users see different things
+- Being able to tell whether an issue is:
+  - a screen/UI problem
+  - a login/session problem
+  - or a permissions issue
 
-## Architecture Overview (Plain English)
+These are the kinds of problems users report, for example:
+
+- “I was logged in and then it kicked me out”
+- “I can log in but I can’t see what I’m supposed to”
+- “It works for my coworker but not for me”
+
+## How the app works
 
 This application is split into two parts:
 
-- A **frontend** that runs in the user’s browser and controls what they see
-- A **backend API** that handles logins, permissions, and data
+- 1) The part the user sees in their browser (the frontend)
+- 2) The part that handles logins and permissions (the backend)
 
-The frontend does not make security decisions on its own. It asks the backend what the user is allowed to do and reacts to the response.
+The screen does NOT decide what a user is allowed to do. It asks the backend, and then shows or hides things based on the answer.
 
-High-level flow:
+If something breaks, support needs to figure out where the problem is happening:
 
-```text
-Browser
-  |
-  v
-React SPA (support-portal-web)
-  |
-  v  HTTP requests + session cookies
-Rails API (support-auth-api)
-  |
-  v
-PostgreSQL database
-```
+- The browser or screen
+- The response coming back from the server
+- The user’s login or session state
 
-# If something breaks, support needs to know where the failure is happening:
+# What the app does
 
-- Browser / UI
-- API responses
-- Session or authentication state
+- Users log in and log out
+- Logging in creates a session so the user stays logged in
+- The app checks the session when the page loads
+- Users are sent to the login screen if they are not logged in
+- Different users see different options
+- If a session expires or breaks, the user is treated as logged out
 
-# Key Behaviors
+# User types (from a support perspective)
 
-- Users log in and log out through the API
-- Login creates a session stored in a cookie
-- The app checks the current session on page load
-- Users are redirected if they are not logged in
-- Different roles see different UI options
-- If a session expires or becomes invalid, the user is treated as logged out
-
-# Roles (User Perspective)
-
-The backend assigns each user a role, which the frontend uses only to decide what to show.
+Each user has a type assigned by the system.
 
 - **Consumer**  
-  Regular end user. Limited access.
+  Regular end user.
 - **Partner**  
-  Business user such as an agent or lender. Broader access than consumers.
+  Business user (agent, lender, etc.)
 - **Admin**  
   Internal user with full access.
 
 Important:
 
-Even if the UI shows something by mistake, the backend still enforces permissions. The server always has the final say.
+Even if the screen looks wrong, the system behind the scenes still controls access.
+The server always has the final say.
 
-# Why This Matters for Application Support
+# Why this matters for customer support
 
-This project reflects real situations application support engineers deal with daily:
+This project reflects real situations support analysts deal with:
 
-- “Why does the user appear logged in but actions fail?”
-- “Why does logging out and back in fix the issue?”
-- “Why can one user see this page but another can’t?”
-- “Is this a UI bug, a session issue, or a permissions problem?”
+- A user looks logged in but actions fail
+- Logging out and back in suddenly fixes the problem
+- One user can see something but another can’t
+- It’s unclear whether the problem is the screen or the account
 
-Because the frontend and backend are separate, these questions can be diagnosed clearly instead of guessing.
+Because the parts of the system are separate, these situations can be reasoned about instead of guessed at.
 
-# Common Support Checks
+# Common things a support analyst would check
 
 Examples of things a support engineer would verify:
 
-- Does the `/me` endpoint return a user or an error?
-- Is the user’s role what they expect it to be?
-- Is the session cookie present?
+- Does the system recognize the user as logged in?
+- Is the user assigned the correct type?
 - Does logging out and logging back in reset the issue?
-- Is the API returning a 401/403 error even though the UI looks correct?
+- Is the system rejecting the request even though the screen looks normal?
 
-# Local Development
+# Local setup
 
-```text
-npm install
-npm run dev
-```
+The app runs locally and talks to a separate backend service.
+This exists only to simulate a real production environment.
 
-The frontend expects the backend API to be running separately and reachable via configuration.
-
-# Related Repository
+# Related backend project
 
 Backend API:
 https://github.com/mattgregory-dev/support-auth-api
 
-Together, these repositories simulate a real-world SaaS system with realistic authentication, session handling, and role-based behavior.
+Together, these projects simulate a real-world SaaS system with realistic login behavior, session issues, and permission problems that commonly show up in customer support tickets.
 
 # Status
 
-This project is actively evolving to include more role-based behavior, error scenarios, and edge cases that commonly surface in customer support tickets.
+This project continues to evolve to include more realistic user issues, edge cases, and failure scenarios that support analysts commonly encounter.

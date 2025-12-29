@@ -1,47 +1,56 @@
 # support-auth-api
 
-This project is the backend API responsible for login state, permissions, and access decisions for a web application.
+This project represents the backend side of a SaaS application where most login, access, and “why am I blocked?” issues actually originate.
 
-From a support perspective, this is the part of the system that determines whether a user is logged in, which account they are using, and what actions are allowed. The frontend makes requests; this API decides whether those requests succeed or fail.
+From a support perspective, this is the system that answers questions like:
+- Is this user actually logged in?
+- Does their account allow them to do this?
+- Is the system rejecting them, even if the UI looks fine?
 
-## What This API Does
+If a user insists “the app is broken,” this is usually where the answer lives.
 
-This API handles:
+## What This API Is Responsible For
 
-- Logging users in and out
-- Tracking whether a user is currently logged in
-- Determining access based on the user’s account and role
-- Rejecting requests when a user is not logged in or not permitted
+This API sits behind the scenes and makes decisions the frontend cannot.
 
-If the UI appears correct but actions fail, the cause is often here.
+It:
+- Keeps track of whether a user is logged in
+- Knows which account the user belongs to
+- Enforces access based on role
+- Rejects requests when something is off
 
-## Issues This API Helps Explain
+The frontend only reacts to these decisions.  
+It does not get a vote.
 
-This API is central to diagnosing common customer-reported problems, including:
+## The Kinds of Issues This Explains
 
-- A user can log in but cannot complete an action
-- A user is logged out unexpectedly
-- One user can access something another user cannot
-- The UI shows the user as logged in, but requests fail
-- Logging out and back in temporarily resolves the issue
+Most customer-facing issues that feel “random” or “inconsistent” trace back here, for example:
 
-These cases usually relate to session state, authentication, or permissions enforced by the API.
+- A user can log in but suddenly can’t do something they did earlier
+- A user gets logged out without clicking logout
+- Two users swear they have the same access, but only one works
+- The UI looks normal, but every action fails
+- Logging out and back in magically fixes things
 
-## Authentication and Session Behavior
+These aren’t UI mysteries — they’re usually session or permission decisions made by this API.
 
-This API uses login sessions to track whether a user is authenticated.
+## Login State and Sessions
 
-- When a user logs in successfully, a session is created
-- That session is stored using cookies
-- Every request checks whether a valid session exists
-- If the session is missing, expired, or invalid, the user is treated as logged out
+This API uses sessions to track login state.
 
-From a support perspective, this means:
-- A user may appear logged in on the screen but still fail actions if the session is no longer valid
-- Logging out and logging back in often resets session-related issues
-- Session problems commonly explain “it worked earlier but not now”
+What matters from a support standpoint:
+- Logging in creates a session
+- That session must be present on every request
+- If the session disappears, expires, or becomes invalid, the user is treated as logged out
 
-## User Roles and Permissions
+This explains common complaints like:
+- “It worked earlier today”
+- “I didn’t log out”
+- “Refreshing didn’t help, but logging out did”
+
+Those are classic session-related symptoms.
+
+## Roles and Access Decisions
 
 Each user account has a role assigned by the system.
 
@@ -50,69 +59,66 @@ Roles include:
 - Partner
 - Admin
 
-The role determines what actions the API allows the user to perform.
+Roles are not cosmetic.  
+They directly control what the API allows.
 
-Important points for support:
-- Roles are enforced by the API, not the UI
-- The frontend cannot override permissions
-- If a user believes they should have access, the role assigned to their account must be verified
+Important for support:
+- The UI cannot override roles
+- Seeing a button does not mean the action will succeed
+- If access is denied, the role on the account must be verified
 
-If access is denied, it is usually because:
-- The user is not logged in
-- The session is invalid
-- The user’s role does not permit the action
+When a user says “I should be able to do this,” the role is one of the first things to check.
 
-## Common API Responses and What They Mean
+## Common Responses and How to Read Them
 
-Support frequently encounters these responses:
+Support often runs into these outcomes:
 
-- **200 OK**
-  The request succeeded. The user is logged in and allowed to perform the action.
+- **200 OK**  
+  The request succeeded. The user is logged in and allowed.
+
 - **401 Unauthorized**  
-  The user is not logged in or the session is invalid.  
-  Commonly resolved by logging in again.
+  The system does not recognize the user as logged in.  
+  Usually tied to session problems.
+
 - **403 Forbidden**  
-  The user is logged in, but their role does not allow the action.  
-  This is usually a permissions or account-type issue, not a login problem.
+  The user is logged in, but their account is not allowed to do this.  
+  This is almost always a role or permissions issue.
 
-Understanding these responses helps determine whether an issue is related to login state, account permissions, or something else.
+Understanding the difference prevents chasing the wrong problem.
 
-## Common Support Checks (API Side)
+## Things a Support Analyst Would Check Here
 
-When investigating an issue, common things to verify on the API side include:
+When troubleshooting an issue tied to this API, common checks include:
 
-- Is the user currently logged in?
-- Does the session still exist and appear valid?
-- Does the `/me` endpoint return a user or an error?
-- Is the user assigned the correct role?
-- Is the API returning a 401 (not logged in) or 403 (not allowed)?
+- Does the system recognize the user as logged in?
+- Is there an active session?
+- Does `/me` return a user or an error?
+- Is the user assigned the role they expect?
+- Is the API rejecting the request even though the UI looks correct?
 
-These checks help determine whether the problem is related to login state, permissions, or something outside the API.
+These checks help determine whether the issue is:
+- Account-related
+- Session-related
+- Or something the frontend is simply reacting to
 
-## Relationship to the Frontend Application
+## How This Relates to the Frontend
 
-This API is used by a separate frontend application that users interact with directly.
+Users never talk to this API directly.  
+They interact with the frontend, which passes requests along.
 
-The frontend:
-- Sends login and logout requests
-- Asks the API who the current user is
-- Displays or hides features based on API responses
+If the frontend and API disagree:
+- The API is the source of truth
+- The frontend is only reporting what it’s told
 
-The API:
-- Decides whether a user is logged in
-- Decides whether an action is allowed
-- Rejects requests when conditions are not met
+Many “UI bugs” turn out to be accurate reflections of API decisions.
 
-If the frontend and API disagree about a user’s state, the API response should be treated as the source of truth.
+## Why This Exists
 
-## Status and Intent
+This project is intentionally focused on the kinds of failures that generate support tickets:
 
-This project exists to simulate real-world authentication, session, and permission issues that commonly surface in customer support tickets.
+- Login confusion
+- Session inconsistencies
+- Access complaints
+- “It works for them but not me”
 
-It is intentionally focused on:
-- Login and logout behavior
-- Session-related problems
-- Role-based access decisions
-- Clear failure cases that require explanation or escalation
-
-The goal is not feature completeness, but realism from a support and troubleshooting perspective.
+The goal is not to show backend complexity, but to demonstrate how these issues can be understood, explained, and escalated with clarity.

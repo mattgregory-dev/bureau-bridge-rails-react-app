@@ -1,124 +1,62 @@
-# support-auth-api
+# Credit Readiness Platform – Rails API
 
-This project represents the backend side of a SaaS application where most login, access, and “why am I blocked?” issues actually originate.
+This repository contains the Ruby on Rails backend for the Credit Readiness Platform.
 
-From a support perspective, this is the system that answers questions like:
-- Is this user actually logged in?
-- Does their account allow them to do this?
-- Is the system rejecting them, even if the UI looks fine?
+The Rails application acts as the primary API and orchestration layer. It is responsible for authentication, session handling, role-based access control, credit data processing, and persistence of derived metrics.
 
-If a user insists “the app is broken,” this is usually where the answer lives.
+## Purpose
 
-## What This API Is Responsible For
+The backend is designed to:
 
-This API sits behind the scenes and makes decisions the frontend cannot.
+- Integrate with a third-party credit data warehouse
+- Process and normalize credit report payloads in-session
+- Compute credit readiness and progress metrics
+- Persist *derived data only* (no raw credit report storage)
+- Enforce tenant, role, and permission boundaries
+- Support multi-tenant operation for credit repair businesses
 
-It:
-- Keeps track of whether a user is logged in
-- Knows which account the user belongs to
-- Enforces access based on role
-- Rejects requests when something is off
+## Key Concepts
 
-The frontend only reacts to these decisions.  
-It does not get a vote.
+- **Multi-tenant architecture**  
+  Each tenant represents a credit repair business.
 
-## The Kinds of Issues This Explains
+- **Roles**  
+  Platform owner, tenant admin, tenant staff, partner, consumer.
 
-Most customer-facing issues that feel “random” or “inconsistent” trace back here, for example:
+- **Goals**  
+  Goals act as the primary collaboration and tracking container for a consumer’s credit journey.
 
-- A user can log in but suddenly can’t do something they did earlier
-- A user gets logged out without clicking logout
-- Two users swear they have the same access, but only one works
-- The UI looks normal, but every action fails
-- Logging out and back in magically fixes things
+- **Session-based credit access**  
+  Raw credit data is accessed and processed during authorized sessions only.
 
-These aren’t UI mysteries — they’re usually session or permission decisions made by this API.
+- **Derived data persistence**  
+  Only calculated metrics, assessments, and aggregates are stored.
 
-## Login State and Sessions
+- **Auditability**  
+  Access to sensitive workflows is logged for traceability.
 
-This API uses sessions to track login state.
+## Tech Stack
 
-What matters from a support standpoint:
-- Logging in creates a session
-- That session must be present on every request
-- If the session disappears, expires, or becomes invalid, the user is treated as logged out
+- Ruby on Rails
+- JSON-based API consumed by a React frontend
+- Session-based authentication (implementation evolving)
+- Relational database for users, tenants, goals, and metrics
 
-This explains common complaints like:
-- “It worked earlier today”
-- “I didn’t log out”
-- “Refreshing didn’t help, but logging out did”
+## Data Handling Philosophy
 
-Those are classic session-related symptoms.
+- Raw credit report data is treated as **ephemeral**
+- Credit payloads are processed in memory
+- No storage of tradelines, PDFs, or bureau raw data
+- Only calculated readiness and progress metrics are persisted
+- PDF and report access is performed via authorized integrations, not local storage
 
-## Roles and Access Decisions
+## Status
 
-Each user account has a role assigned by the system.
+This is an active, early-stage build.
 
-Roles include:
-- Consumer
-- Partner
-- Admin
+Core architecture and foundational models are in place.  
+Authorization, APIs, and workflows are under active development.
 
-Roles are not cosmetic.  
-They directly control what the API allows.
+## Related Repositories
 
-Important for support:
-- The UI cannot override roles
-- Seeing a button does not mean the action will succeed
-- If access is denied, the role on the account must be verified
-
-When a user says “I should be able to do this,” the role is one of the first things to check.
-
-## Common Responses and How to Read Them
-
-Support often runs into these outcomes:
-
-- **200 OK**  
-  The request succeeded. The user is logged in and allowed.
-
-- **401 Unauthorized**  
-  The system does not recognize the user as logged in.  
-  Usually tied to session problems.
-
-- **403 Forbidden**  
-  The user is logged in, but their account is not allowed to do this.  
-  This is almost always a role or permissions issue.
-
-Understanding the difference prevents chasing the wrong problem.
-
-## Things a Support Analyst Would Check Here
-
-When troubleshooting an issue tied to this API, common checks include:
-
-- Does the system recognize the user as logged in?
-- Is there an active session?
-- Does `/me` return a user or an error?
-- Is the user assigned the role they expect?
-- Is the API rejecting the request even though the UI looks correct?
-
-These checks help determine whether the issue is:
-- Account-related
-- Session-related
-- Or something the frontend is simply reacting to
-
-## How This Relates to the Frontend
-
-Users never talk to this API directly.  
-They interact with the frontend, which passes requests along.
-
-If the frontend and API disagree:
-- The API is the source of truth
-- The frontend is only reporting what it’s told
-
-Many “UI bugs” turn out to be accurate reflections of API decisions.
-
-## Why This Exists
-
-This project is intentionally focused on the kinds of failures that generate support tickets:
-
-- Login confusion
-- Session inconsistencies
-- Access complaints
-- “It works for them but not me”
-
-The goal is not to show backend complexity, but to demonstrate how these issues can be understood, explained, and escalated with clarity.
+- React frontend repository (UI and client-side logic)

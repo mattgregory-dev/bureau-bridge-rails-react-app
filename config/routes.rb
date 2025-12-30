@@ -14,5 +14,20 @@ Rails.application.routes.draw do
     post "login",  to: "sessions#create"
     post "logout", to: "sessions#destroy"
     get  "me",     to: "me#show"
+
+    namespace :admin do
+      get "ping", to: "ping#show"
+    end
+
+    namespace :partner do
+      get "ping", to: "ping#show"
+    end
+
+    namespace :credit_report do
+      get "full",    to: "credit_report#full"
+      get "limited", to: "credit_report#limited"
+    end
+
   end
+
 end

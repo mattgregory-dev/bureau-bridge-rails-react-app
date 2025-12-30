@@ -8,16 +8,16 @@ class ApplicationController < ActionController::API
   end
 
   def require_auth!
-    render json: { error: "unauthorized" }, status: :unauthorized unless current_user
+    return if current_user
+    render json: { error: "unauthorized" }, status: :unauthorized and return
   end
 
   def require_role!(*roles)
     require_auth!
-    return unless current_user
-
     allowed = roles.map(&:to_s)
     return if allowed.include?(current_user.role)
 
-    render json: { error: "forbidden" }, status: :forbidden
+    render json: { error: "forbidden" }, status: :forbidden and return
   end
+
 end

@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
+import { useEffect, useState, type ReactNode } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import { api } from "./auth";
 import { loadFixture } from "./fixtures/loadFixture";
 import { runPipeline } from "./pipeline/runPipeline";
@@ -8,50 +9,62 @@ import Dashboard from "./pages/Dashboard";
 import Health from "./pages/Health";
 import Login from "./pages/Login";
 
-function ProtectedRoute({ me, checking, children }) {
+import type { PipelineTrace, TraceStep } from "./pipeline/debug/tap";
+
+type Me = {
+  id: string;
+  email: string;
+  role?: string;
+  tenantId?: string | null;
+};
+
+type ProtectedRouteProps = {
+  me: Me | null;
+  checking: boolean;
+  children: ReactNode;
+};
+
+function ProtectedRoute({ me, checking, children }: ProtectedRouteProps) {
   if (checking) return <div style={{ padding: 24 }}>Checking session...</div>;
   if (!me) return <Navigate to="/login" replace />;
-  return children;
+  return <>{children}</>;
 }
 
 export default function App() {
-  const [me, setMe] = useState(null);
+  const [me, setMe] = useState<Me | null>(null);
   const [checking, setChecking] = useState(true);
+
   const debugEnabled =
-    import.meta.env.DEV &&
-    new URLSearchParams(location.search).has("debug");
-  const [trace, setTrace] = useState(null);
+    import.meta.env.DEV && new URLSearchParams(location.search).has("debug");
+
+  const [trace, setTrace] = useState<PipelineTrace | null>(null);
 
   useEffect(() => {
     if (!debugEnabled) return;
 
     (async () => {
       try {
-        console.log("Debug: loading fixture...");
         const raw = await loadFixture("report-airplane-jefferson-2025-03.json");
-        console.log("Debug: fixture loaded", raw);
-
-        console.log("Debug: running pipeline...");
         const out = runPipeline(raw, { debug: true });
-        console.log("Debug: pipeline output", out);
 
+        // out.trace is PipelineTrace | null
         setTrace(out.trace ?? []);
       } catch (e) {
-        console.error("Debug pipeline failed:", e);
-        setTrace([{ label: "error", data: String(e) }]);
+        const errorStep: TraceStep = { label: "error", data: String(e) };
+        setTrace([errorStep]);
       }
     })();
   }, [debugEnabled]);
 
   useEffect(() => {
-    api("/api/me")
+    api<Me>("/api/me")
       .then(setMe)
       .catch(() => setMe(null))
       .finally(() => setChecking(false));
   }, []);
 
   async function logout() {
-    await api("/api/logout", { method: "POST" });
+    await api<unknown>("/api/logout", { method: "POST" });
     setMe(null);
   }
 
@@ -59,15 +72,18 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
         <Route path="/login" element={<Login onLoggedIn={setMe} />} />
+
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute me={me} checking={checking}>
-              <Dashboard me={me} onLogout={logout} />
+              <Dashboard me={me!} onLogout={logout} />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/health"
           element={
@@ -76,13 +92,14 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/debug"
           element={
             <ProtectedRoute me={me} checking={checking}>
               {!debugEnabled ? (
                 <Navigate to="/dashboard" replace />
-              ) : !trace ? (
+              ) : trace === null ? (
                 <div className="p-6">Loading debug data…</div>
               ) : (
                 <DebugPanel trace={trace} />
@@ -90,6 +107,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
         <Route path="*" element={<div style={{ padding: 24 }}>Not found</div>} />
       </Routes>
     </BrowserRouter>

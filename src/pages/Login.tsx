@@ -2,25 +2,38 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../auth";
 
-export default function Login({ onLoggedIn }) {
+type Me = {
+  id: string;
+  email: string;
+  role?: string;
+  tenantId?: string | null;
+};
+
+type LoginProps = {
+  onLoggedIn: (me: Me) => void;
+};
+
+type LoginResponse = unknown; // you do not use the response body from /api/login
+
+export default function Login({ onLoggedIn }: LoginProps) {
   const [email, setEmail] = useState("test@example.com");
   const [password, setPassword] = useState("password");
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();
 
-  async function submit(e) {
+  async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
-      await api("/api/login", {
+      await api<LoginResponse>("/api/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
 
-      const me = await api("/api/me");
+      const me = await api<Me>("/api/me");
       onLoggedIn(me);
       nav("/dashboard");
     } catch {

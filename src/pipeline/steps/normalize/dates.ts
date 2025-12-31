@@ -1,4 +1,6 @@
-export function dateToISO(value) {
+export function dateToISO(
+  value: string | number | null | undefined
+): string | null {
   if (value == null) return null;
 
   // Epoch ms

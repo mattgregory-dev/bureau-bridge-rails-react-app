@@ -2,11 +2,15 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../auth";
 
+type HealthResponse = {
+  ok: boolean;
+};
+
 export default function Health() {
-  const [ok, setOk] = useState(null);
+  const [ok, setOk] = useState<boolean | null>(null);
 
   useEffect(() => {
-    api("/api/health")
+    api<HealthResponse>("/api/health")
       .then((d) => setOk(d.ok))
       .catch(() => setOk(false));
   }, []);

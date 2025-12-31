@@ -1,3 +1,5 @@
+![BureauBridge](public/favicon-32.png)
+
 # Credit Readiness Platform – React Frontend
 
 This repository contains the React frontend for the Credit Readiness Platform.

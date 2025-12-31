@@ -1,4 +1,4 @@
-![BureauBridge](assets/logo-200x93.png)
+![BureauBridge](public/logo-200x93.png)
 
 # Credit Readiness Platform – React Frontend
 

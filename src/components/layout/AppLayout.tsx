@@ -21,7 +21,7 @@ export function AppLayout({
           <TopNav title={title} right={right} />
           <main
             className={[
-              "mx-auto w-full flex-1 px-4 py-6",
+              "mx-auto w-full flex-1 px-4 py-6 mb-[100px]",
               fullWidth ? "" : "max-w-6xl",
             ].join(" ")}
           >

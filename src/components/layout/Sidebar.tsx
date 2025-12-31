@@ -9,7 +9,7 @@ import {
   Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 
-const linkBase = "block rounded-md px-3 py-2 text-base font-semibold transition";
+const linkBase = "block rounded-md px-3 py-2 text-sm font-semibold transition";
 const linkInactive = "hover:bg-slate-200";
 const linkActive = "bg-blue-500 hover:bg-blue-500 text-white font-semibold";
 
@@ -22,7 +22,7 @@ export function Sidebar() {
             <img
               src={logo}
               alt="BureauBridge"
-              className="w-[205px] h-auto"
+              className="w-[187px] h-auto"
             />
           </Link>
           <div>

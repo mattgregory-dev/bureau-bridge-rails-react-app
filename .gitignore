@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# local dev fixtures
+public/fixtures/
+
+# optional: pipeline work-in-progress folders if they are experimental
+src/pipeline/steps/derive/
+src/pipeline/steps/group/
+src/pipeline/steps/normalize/fieldResolvers.ts
+src/pipeline/steps/normalize/index.ts

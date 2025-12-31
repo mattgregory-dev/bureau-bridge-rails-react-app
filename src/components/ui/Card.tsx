@@ -7,8 +7,8 @@ export function Card({ children }: { children: ReactNode }) {
 export function CardHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="border-b border-slate-100 px-4 py-3">
-      <div className="text-sm font-semibold">{title}</div>
-      {subtitle ? <div className="text-xs text-slate-500">{subtitle}</div> : null}
+      <div className="text-lg font-semibold">{title}</div>
+      {subtitle ? <div className="text-base mt-0 font-normal">{subtitle}</div> : null}
     </div>
   );
 }

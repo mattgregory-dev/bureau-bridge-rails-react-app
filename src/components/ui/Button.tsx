@@ -16,12 +16,14 @@ export function Button({
   type = "button",
   ...props
 }: ButtonProps) {
+
   const base =
-    "inline-flex items-center justify-center rounded px-3 py-1.5 text-sm font-medium " +
+    "inline-flex items-center justify-center rounded-md " +
+    "px-4 py-2 text-base font-semibold " +
     "focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60";
 
   const variants: Record<ButtonVariant, string> = {
-    primary: "bg-indigo-600 text-white hover:bg-indigo-700",
+    primary: "text-white bg-blue-500 hover:bg-blue-600",
     outline: "border border-gray-300 bg-white text-slate-900 hover:bg-gray-100",
     ghost: "bg-transparent text-slate-900 hover:bg-gray-100",
   };

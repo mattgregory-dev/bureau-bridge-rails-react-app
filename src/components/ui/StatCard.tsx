@@ -16,11 +16,11 @@ export function StatCard({
     <Card>
       <div className="flex items-start justify-between p-4">
         <div>
-          <div className="text-xs font-medium text-slate-500">{label}</div>
+          <div className="text-base font-medium">{label}</div>
           <div className="mt-1 text-2xl font-semibold">{value}</div>
-          {hint ? <div className="mt-1 text-xs text-slate-500">{hint}</div> : null}
+          {hint ? <div className="mt-1 text-sm">{hint}</div> : null}
         </div>
-        {icon ? <div className="text-slate-400">{icon}</div> : null}
+        {icon ? <div className="">{icon}</div> : null}
       </div>
     </Card>
   );

@@ -1,8 +1,16 @@
-/**
- * Build a stable key used later to group the same tradeline across bureaus.
- * This is intentionally tolerant: it will work even when fields are missing.
- */
-export function buildTradelineKey({ creditorName, accountLast4, openedOnISO, section }) {
+export type TradelineKeyParts = {
+  creditorName?: string | null;
+  accountLast4?: string | null;
+  openedOnISO?: string | null; // ISO string, or anything parseable already trimmed elsewhere
+  section?: string | null;
+};
+
+export function buildTradelineKey({
+  creditorName,
+  accountLast4,
+  openedOnISO,
+  section,
+}: TradelineKeyParts): string {
   const name = (creditorName || "unknown")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")

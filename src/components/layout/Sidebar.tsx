@@ -69,15 +69,15 @@ export function Sidebar() {
                 Settings
               </div>
             </NavLink>
-        <a
-          href="/debug?debug=1"
-          className="block rounded-md px-3 py-2 text-base font-semibold transition hover:bg-slate-100"
-        >
-          <div className="flex items-center gap-2">
-            <BugAntIcon className="h-5 w-5" />
-            Debug
-          </div>
-        </a>
+            <a
+              href="/debug?debug=1"
+              className="block rounded-md px-3 py-2 text-sm font-semibold transition hover:bg-slate-100"
+            >
+            <div className="flex items-center gap-2">
+              <BugAntIcon className="h-5 w-5" />
+              Debug
+            </div>
+          </a>
         </div>
       </div>
     </aside>

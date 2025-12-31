@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../auth";
+import { Button } from "../components/ui/Button";
+import logo from "../assets/logo.webp";
+import { Link } from "react-router-dom";
 
 type Me = {
   id: string;
@@ -46,6 +49,28 @@ export default function Login({ onLoggedIn }: LoginProps) {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
       <div className="w-full max-w-md bg-white shadow rounded p-6">
+
+
+
+      <div className="px-4 py-4 border-b mb-3">
+        <div className="flex flex-col items-center gap-0">
+          <Link to="/snapshot" className="block">
+            <img
+              src={logo}
+              alt="BureauBridge"
+              className="w-[187px] h-auto"
+            />
+          </Link>
+          <div>
+            <div className="text-base text-slate-600 italic font-semibold">
+              Credit rediness for life goals
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
         <h1 className="text-2xl font-bold">Login</h1>
         <p className="text-sm text-gray-600 mt-1">Sign in to continue</p>
 
@@ -77,13 +102,13 @@ export default function Login({ onLoggedIn }: LoginProps) {
             </div>
           )}
 
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            className="w-full rounded bg-indigo-600 text-white py-2 text-sm font-medium hover:bg-indigo-700 disabled:opacity-60"
+            className="w-full"
           >
             {loading ? "Signing in…" : "Login"}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

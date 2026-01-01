@@ -60,7 +60,7 @@ export function AvatarMenu({
         onClick={() => setOpen((v) => !v)}
       >
         <span className="hidden text-slate-700 md:inline">{name}</span>
-        <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-900 text-xs font-semibold text-white">
+        <span className="grid h-8 w-8 place-items-center rounded-full bg-blue-600 text-xs font-semibold text-white">
           {initials || "U"}
         </span>
       </button>

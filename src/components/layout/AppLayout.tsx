@@ -18,7 +18,7 @@ export function AppLayout({
       <div className="flex min-h-screen">
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
-          <TopNav title={title} right={right} />
+          <TopNav title={title} />
           <main
             className={[
               "mx-auto w-full flex-1 px-4 py-6 mb-[100px]",

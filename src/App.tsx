@@ -12,6 +12,10 @@ import Readiness from "./pages/Readiness";
 import History from "./pages/History";
 import Settings from "./pages/Settings";
 
+import SnapshotMock from "./mock/SnapshotMock";
+import HistoryMock from "./mock/HistoryMock";
+import ReadinessMock from "./mock/ReadinessMock";
+
 import type { PipelineTrace, TraceStep } from "./pipeline/debug/tap";
 
 
@@ -126,6 +130,39 @@ export default function App() {
               </ProtectedRoute>
           }
         />
+
+
+        <Route
+          path="/mock/snapshot" element={
+              <ProtectedRoute me={me} checking={checking}>
+                <SnapshotMock />
+              </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mock/history" element={
+              <ProtectedRoute me={me} checking={checking}>
+                <HistoryMock />
+              </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mock/readiness" element={
+              <ProtectedRoute me={me} checking={checking}>
+                <ReadinessMock />
+              </ProtectedRoute>
+          }
+        />
+
+
+
+
+
+
+
+
+
+
 
         <Route
           path="/health"

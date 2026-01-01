@@ -51,7 +51,7 @@ export default function DebugPanel({ trace }: DebugPanelProps) {
           <Card>
             <CardHeader title="Step Data" subtitle="JSON output for selected step" />
             <CardBody>
-              <pre className="m-0 max-h-[70vh] overflow-auto rounded-md bg-zinc-900 p-3 text-sm text-green-300">
+              <pre className="m-0 max-h-[70vh] max-w-[1100px] overflow-auto rounded-md bg-zinc-900 p-3 text-sm text-green-300">
                 {JSON.stringify(trace[Math.min(idx, trace.length - 1)]?.data, null, 2)}
               </pre>
             </CardBody>

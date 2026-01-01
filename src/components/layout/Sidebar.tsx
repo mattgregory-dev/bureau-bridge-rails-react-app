@@ -7,15 +7,16 @@ import {
   ClockIcon,
   BugAntIcon,
   Cog6ToothIcon,
+  PaintBrushIcon,
 } from "@heroicons/react/24/outline";
 
-const linkBase = "block rounded-md px-3 py-2 text-sm font-semibold transition";
+const linkBase = "block rounded-md px-3 py-2 text-sm font-semibold transition mb-2";
 const linkInactive = "hover:bg-slate-200";
 const linkActive = "bg-blue-500 hover:bg-blue-500 text-white font-semibold";
 
 export function Sidebar() {
   return (
-    <aside className="hidden w-64 flex-shrink-0 border-r bg-white md:flex md:flex-col">
+    <aside className="hhidden w-[230px] flex-shrink-0 border-r bg-white md:flex md:flex-col h-screenhidden w-[230px] flex-shrink-0 border-r bg-white md:flex md:flex-col md:sticky md:top-0 md:h-screen">
       <div className="px-4 py-4 border-b mb-3">
         <div className="flex flex-col items-center gap-0">
           <Link to="/snapshot" className="block">
@@ -26,7 +27,7 @@ export function Sidebar() {
             />
           </Link>
           <div>
-            <div className="text-base text-slate-600 italic font-semibold">
+            <div className="text-sm text-slate-600 italic font-semibold">
               Credit rediness for life goals
             </div>
           </div>
@@ -58,6 +59,7 @@ export function Sidebar() {
       </nav>
       <div className="mt-auto px-2 pb-8">
         <div className="mb-2 border-t pt-2">
+
             <NavLink
               to="/settings"
               className={({ isActive }) =>
@@ -69,6 +71,43 @@ export function Sidebar() {
                 Settings
               </div>
             </NavLink>
+
+            <NavLink
+              to="/mock/snapshot"
+              className={({ isActive }) =>
+                `${linkBase} ${isActive ? linkActive : linkInactive}`
+              }
+            >
+              <div className="flex items-center gap-2">
+                <PaintBrushIcon className="h-5 w-5" />
+                Snapshot Mockup
+              </div>
+            </NavLink>
+
+            <NavLink
+              to="/mock/readiness"
+              className={({ isActive }) =>
+                `${linkBase} ${isActive ? linkActive : linkInactive}`
+              }
+            >
+              <div className="flex items-center gap-2">
+                <PaintBrushIcon className="h-5 w-5" />
+                Metrics History 
+              </div>
+            </NavLink>
+
+            <NavLink
+              to="/mock/history"
+              className={({ isActive }) =>
+                `${linkBase} ${isActive ? linkActive : linkInactive}`
+              }
+            >
+              <div className="flex items-center gap-2">
+                <PaintBrushIcon className="h-5 w-5" />
+                Readiness
+              </div>
+            </NavLink>
+
             <a
               href="/debug?debug=1"
               className="block rounded-md px-3 py-2 text-sm font-semibold transition hover:bg-slate-100"
@@ -78,6 +117,7 @@ export function Sidebar() {
               Debug
             </div>
           </a>
+
         </div>
       </div>
     </aside>

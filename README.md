@@ -6,6 +6,8 @@ This repository contains the React frontend for the Credit Readiness Platform.
 
 The frontend is responsible for rendering the user interface, managing client-side state, and interacting with the Rails API. It does not contain business logic related to credit processing or data persistence.
 
+![BureauBridge](public/screenshot.png)
+
 ## Purpose
 
 The frontend is designed to:

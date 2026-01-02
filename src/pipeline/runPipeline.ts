@@ -1,4 +1,4 @@
-import { extractProviderViews } from "./steps/extractProviderViews";
+import { extractProviderViews } from "./steps/extract/extractProviderViews";
 import {
   normalizeAccount,
   normalizePublicRecordsSection,

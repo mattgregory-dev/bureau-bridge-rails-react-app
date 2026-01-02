@@ -1,11 +1,18 @@
-export type RevolvingTradelineRow = {
+export type BureauCode = "EFX" | "EXP" | "TU";
+
+export type BureauFlags = {
+  EFX: boolean;
+  EXP: boolean;
+  TU: boolean;
+};
+
+export type TradelineCategory = "Revolving" | "Mortgage" | "Installment";
+
+export type TradelineTableRow = {
   id: string;
   creditor: string;
-  status: "Open" | "Closed";
+  category: TradelineCategory;
   balance: number;
-  limit: number;
-  utilizationPct: number;
-  lastReported: string; // YYYY-MM
 };
 
 export type DerogatoryRow = {

@@ -14,6 +14,8 @@ const linkBase = "block rounded-md px-3 py-2 text-sm font-semibold transition mb
 const linkInactive = "hover:bg-slate-200";
 const linkActive = "bg-blue-500 hover:bg-blue-500 text-white font-semibold";
 
+const devOnly = import.meta.env.DEV;
+
 export function Sidebar() {
   return (
     <aside className="hhidden w-[230px] flex-shrink-0 border-r bg-white md:flex md:flex-col h-screenhidden w-[230px] flex-shrink-0 border-r bg-white md:flex md:flex-col md:sticky md:top-0 md:h-screen">
@@ -72,51 +74,58 @@ export function Sidebar() {
               </div>
             </NavLink>
 
-            <NavLink
-              to="/mock/snapshot"
-              className={({ isActive }) =>
-                `${linkBase} ${isActive ? linkActive : linkInactive}`
-              }
-            >
-              <div className="flex items-center gap-2">
-                <PaintBrushIcon className="h-5 w-5" />
-                Snapshot Mockup
-              </div>
-            </NavLink>
+            {devOnly && (
+              <div>
+                {/* For developers normalizing only */}
+                <NavLink
+                  to="/mock/snapshot"
+                  className={({ isActive }) =>
+                    `${linkBase} ${isActive ? linkActive : linkInactive}`
+                  }
+                >
+                  <div className="flex items-center gap-2">
+                    <PaintBrushIcon className="h-5 w-5" />
+                    Snapshot Mockup
+                  </div>
+                </NavLink>
 
-            <NavLink
-              to="/mock/readiness"
-              className={({ isActive }) =>
-                `${linkBase} ${isActive ? linkActive : linkInactive}`
-              }
-            >
-              <div className="flex items-center gap-2">
-                <PaintBrushIcon className="h-5 w-5" />
-                Metrics History 
-              </div>
-            </NavLink>
+                <NavLink
+                  to="/mock/readiness"
+                  className={({ isActive }) =>
+                    `${linkBase} ${isActive ? linkActive : linkInactive}`
+                  }
+                >
+                  <div className="flex items-center gap-2">
+                    <PaintBrushIcon className="h-5 w-5" />
+                    Metrics History
+                  </div>
+                </NavLink>
 
-            <NavLink
-              to="/mock/history"
-              className={({ isActive }) =>
-                `${linkBase} ${isActive ? linkActive : linkInactive}`
-              }
-            >
-              <div className="flex items-center gap-2">
-                <PaintBrushIcon className="h-5 w-5" />
-                Readiness
-              </div>
-            </NavLink>
+                <NavLink
+                  to="/mock/history"
+                  className={({ isActive }) =>
+                    `${linkBase} ${isActive ? linkActive : linkInactive}`
+                  }
+                >
+                  <div className="flex items-center gap-2">
+                    <PaintBrushIcon className="h-5 w-5" />
+                    Readiness
+                  </div>
+                </NavLink>
 
-            <a
-              href="/debug?debug=1"
-              className="block rounded-md px-3 py-2 text-sm font-semibold transition hover:bg-slate-100"
-            >
-            <div className="flex items-center gap-2">
-              <BugAntIcon className="h-5 w-5" />
-              Debug
-            </div>
-          </a>
+                <NavLink
+                  to="/debug"
+                  className={({ isActive }) =>
+                    `${linkBase} ${isActive ? linkActive : linkInactive}`
+                  }
+                >
+                  <div className="flex items-center gap-2">
+                    <BugAntIcon className="h-5 w-5" />
+                    Debug Tools
+                  </div>
+                </NavLink>
+              </div>
+            )}
 
         </div>
       </div>

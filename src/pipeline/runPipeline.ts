@@ -1,6 +1,5 @@
 import { extractProviderViews } from "./steps/extractProviderViews";
-import { normalizeAccountV1 } from "./steps/normalize/normalizeAccountV1";
-import { createTap } from "./debug/tap";
+import { normalizeAccount, type NormalizedAccount } from "./steps/normalize/normalizeAccount";
 
 type SectionName =
   | "revolvingAccounts"
@@ -23,42 +22,20 @@ type ExtractProviderViewsResult = {
   providerViews: ProviderView[];
 };
 
-type TapFn = <T>(label: string, value: T) => T;
+// Optional: re-export so callers can import from pipeline instead of normalize layer.
+// export type { NormalizedAccount };
 
-// Import the real trace type from tap so App.tsx and DebugPanel agree.
-import type { PipelineTrace } from "./debug/tap";
-
-type CreateTapResult = {
-  tap: TapFn;
-  trace: PipelineTrace | null;
+export type PipelineReport = {
+  normalizedAccounts: NormalizedAccount[];
 };
 
-type RunPipelineOptions = {
-  debug?: boolean;
+export type PipelineResult = {
+  report: PipelineReport;
 };
 
-// Keep this loose until normalizeAccountV1 is typed.
-export type NormalizedAccountV1 = unknown;
-
-export type PipelineReportV1 = {
-  normalizedAccountsV1: NormalizedAccountV1[];
-};
-
-export type PipelineResultV1 = {
-  report: PipelineReportV1;
-  trace: PipelineTrace | null;
-};
-
-export function runPipeline(
-  raw: unknown,
-  { debug = false }: RunPipelineOptions = {}
-): PipelineResultV1 {
-  const { trace, tap } = createTap(debug) as unknown as CreateTapResult;
-
-  const { providerViews } = tap(
-    "providerViews",
-    extractProviderViews(raw) as ExtractProviderViewsResult
-  );
+export function runPipeline(raw: unknown): PipelineResult {
+  const { providerViews } =
+    extractProviderViews(raw) as ExtractProviderViewsResult;
 
   const sections: SectionName[] = [
     "revolvingAccounts",
@@ -68,28 +45,22 @@ export function runPipeline(
     "otherAccounts",
   ];
 
-  const normalizedAccountsV1 = tap(
-    "normalizedAccountsV1",
-    providerViews.flatMap((view) => {
-      const provider = view?.provider ?? "UNKNOWN";
+  const normalizedAccounts = providerViews.flatMap((view) => {
+    const provider = view?.provider ?? "UNKNOWN";
 
-      return sections.flatMap((section) => {
-        const list = Array.isArray(view?.[section])
-          ? (view[section] as unknown[])
-          : [];
+    return sections.flatMap((section) => {
+      const list = Array.isArray(view?.[section])
+        ? (view[section] as unknown[])
+        : [];
 
-        return list.map((rawAcc) =>
-          normalizeAccountV1(
-            rawAcc as Record<string, unknown> | null | undefined,
-            { provider, section },
-            { debug }
-          )
-        );
-      });
-    })
-  );
+      return list.map((rawAcc) =>
+        normalizeAccount(rawAcc as Record<string, unknown> | null | undefined, {
+          provider,
+          section,
+        })
+      );
+    });
+  });
 
-  const report = tap("report", { normalizedAccountsV1 });
-
-  return { report, trace: trace ?? null };
+  return { report: { normalizedAccounts } };
 }

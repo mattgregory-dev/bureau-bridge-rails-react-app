@@ -1,9 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { api } from "./auth";
-import { loadFixture } from "./fixtures/loadFixture";
-import { runPipeline } from "./pipeline/runPipeline";
-import DebugPanel from "./debug/DebugPanel";
 import Health from "./pages/Health";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -11,13 +8,10 @@ import Snapshot from "./pages/Snapshot";
 import Readiness from "./pages/Readiness";
 import History from "./pages/History";
 import Settings from "./pages/Settings";
-
+import DebugPanel from "./debug/DebugPanel";
 import SnapshotMock from "./mock/SnapshotMock";
 import HistoryMock from "./mock/HistoryMock";
 import ReadinessMock from "./mock/ReadinessMock";
-
-import type { PipelineTrace, TraceStep } from "./pipeline/debug/tap";
-
 
 type Me = {
   id: string;
@@ -41,29 +35,6 @@ function ProtectedRoute({ me, checking, children }: ProtectedRouteProps) {
 export default function App() {
   const [me, setMe] = useState<Me | null>(null);
   const [checking, setChecking] = useState(true);
-
-  const debugEnabled =
-    import.meta.env.DEV && new URLSearchParams(location.search).has("debug");
-
-  //const [trace, setTrace] = useState<PipelineTrace | null>(null);
-  const [trace, setTrace] = useState<PipelineTrace>([]);
-
-  useEffect(() => {
-    if (!debugEnabled) return;
-
-    (async () => {
-      try {
-        const raw = await loadFixture("report-airplane-jefferson-2025-03.json");
-        const out = runPipeline(raw, { debug: true });
-
-        // out.trace is PipelineTrace | null
-        setTrace(out.trace ?? []);
-      } catch (e) {
-        const errorStep: TraceStep = { label: "error", data: String(e) };
-        setTrace([errorStep]);
-      }
-    })();
-  }, [debugEnabled]);
 
   useEffect(() => {
     api<Me>("/api/me")
@@ -131,7 +102,6 @@ export default function App() {
           }
         />
 
-
         <Route
           path="/mock/snapshot" element={
               <ProtectedRoute me={me} checking={checking}>
@@ -139,6 +109,7 @@ export default function App() {
               </ProtectedRoute>
           }
         />
+
         <Route
           path="/mock/history" element={
               <ProtectedRoute me={me} checking={checking}>
@@ -146,6 +117,7 @@ export default function App() {
               </ProtectedRoute>
           }
         />
+
         <Route
           path="/mock/readiness" element={
               <ProtectedRoute me={me} checking={checking}>
@@ -153,16 +125,6 @@ export default function App() {
               </ProtectedRoute>
           }
         />
-
-
-
-
-
-
-
-
-
-
 
         <Route
           path="/health"
@@ -172,21 +134,18 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/debug"
           element={
             <ProtectedRoute me={me} checking={checking}>
-              {!debugEnabled ? (
-                <Navigate to="/snapshot" replace />
-              ) : trace === null ? (
-                <div className="p-6">Loading debug data…</div>
-              ) : (
-                <DebugPanel trace={trace} />
-              )}
+              <DebugPanel />
             </ProtectedRoute>
           }
         />
+
         <Route path="*" element={<div style={{ padding: 24 }}>Not found</div>} />
+
       </Routes>
     </BrowserRouter>
   );

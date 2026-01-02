@@ -56,7 +56,7 @@ export default function DebugPanel() {
   };
 
   return (
-    <AppLayout title="Debug" fullWidth>
+    <AppLayout title="Debug" fullWidth showDisclosure={false} showBottomPadding={false}>
       {!items ? (
         <Card>
           <CardHeader title="Loading" subtitle="Building normalized accounts" />

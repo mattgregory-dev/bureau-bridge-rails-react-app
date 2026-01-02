@@ -19,7 +19,7 @@ export default function Settings() {
   }
 
   return (
-    <AppLayout title="Settings">
+    <AppLayout title="Settings" showDisclosure={false}>
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard label="Account" value="Tenant Admin" hint="Role (stub)" />
         <StatCard label="Timezone" value={timezone} hint="Used for snapshots and logs" />

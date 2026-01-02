@@ -1,7 +1,10 @@
 import { normalizeText, last4, normalizeProvider } from "./strings";
 import { dateToISO } from "./dates";
 import { moneyToNumber } from "./money";
-import { buildTradelineKey } from "./keys";
+import { buildCreditAccountKey } from "./keys";
+import { buildCollectionKey } from "./keys";
+import { buildInquiryKey } from "./keys";
+import { buildPublicRecordKey } from "./keys";
 
 type NormalizeMeta = {
   provider: string;
@@ -40,6 +43,8 @@ function sourceTypeForSection(section: string): SourceType {
 // Loose input type. Your bureau payloads vary.
 // Use this until you introduce runtime validation (zod, etc.).
 type RawAccount = Record<string, unknown> | null | undefined;
+
+// Credit Account Source Type
 
 export type NormalizedBalances = {
   highCreditAmount: number | null;
@@ -130,7 +135,19 @@ function normalizePaymentHistory(raw: unknown): NormalizedPaymentHistory {
   return { months };
 }
 
-// Option A: discriminated union by sourceType
+// Collections Source Type
+export type NormalizedCollectionDates = {
+  reportedDate: string | null;
+  assignedDate: string | null;
+  balanceDate: string | null;
+  statusDate: string | null;
+};
+
+export type NormalizedCollectionBalance = {
+  amount: number | null;
+};
+
+// Discriminated union by sourceType
 
 export type BaseNormalized = {
   //---Location
@@ -183,42 +200,34 @@ export type NormalizedCreditAccount = BaseNormalized & {
 export type NormalizedCollectionAccount = BaseNormalized & {
   sourceType: "collectionAccount";
 
-  // keep it lean for now
   id: string;
-  accountName: string;
+  agencyClient: string;
   accountLast4: string | null;
   accountNumberRaw: string | null;
-  isNegative: string | null;
-
-  balances: NormalizedBalances;
-  dates: NormalizedDates;
-
-  tradelineKey: string;
-
-  // raw-shaped extras (optional)
-  comments: unknown | null;
-  contactInformation: unknown | null;
+  accountDesignatorCode: string | null;
+  status: string | null;
+  balance: NormalizedCollectionBalance;
+  dates: NormalizedCollectionDates;
+  collectionKey: string;
 };
 
 export type NormalizedInquiry = BaseNormalized & {
   sourceType: "inquiry";
-
-  subscriberName: string | null;
-  inquiryType: string | null;
-  inquiryDate: string | null;
+  type: string | null;
+  reportedDate: string | null;
+  contactInformation: string | null;
+  inquiryKey: string;
 };
 
 export type NormalizedPublicRecord = BaseNormalized & {
   sourceType: "publicRecord";
 
+  publicRecordType: string | null;
   id: string;
-  recordType: string | null;
-  status: string | null;
   filedDate: string | null;
-  resolvedDate: string | null;
-  reportedDate: string | null;
-  amount: number | null;
+  dispositionStatus: string | null;
   courtName: string | null;
+  publicRecordKey: string;
 };
 
 export type NormalizedAccount =
@@ -285,7 +294,7 @@ function normalizeCreditAccount(
 
   const providerNorm = normalizeProvider(provider);
 
-  const tradelineKey = buildTradelineKey({
+  const tradelineKey = buildCreditAccountKey({
     accountName,
     accountLast4,
     dateOpened: dates.dateOpened,
@@ -341,40 +350,30 @@ function normalizeCollectionAccount(
   const { provider, section } = meta;
 
   const id = normalizeText(acc?.id) || "Unknown";
-  const accountName =
-    normalizeText(acc?.accountName) ||
-    normalizeText(acc?.collectorName) ||
-    "Unknown";
+  const agencyClient = normalizeText(acc?.agencyClient) || "Unknown";
 
   const accountLast4 = last4(acc?.accountNumber);
   const accountNumberRaw = normalizeText(acc?.accountNumber);
-  const isNegative = normalizeText(acc?.isNegative);
+  const accountDesignatorCode = normalizeText(acc?.accountDesignatorCode);
+  const status = normalizeText(acc?.status);
 
-  const balances: NormalizedBalances = {
-    highCreditAmount: moneyToNumber(acc?.highCreditAmount),
-    creditLimitAmount: moneyToNumber(acc?.creditLimitAmount),
-    balanceAmount: moneyToNumber(acc?.balanceAmount),
-    pastDueAmount: moneyToNumber(acc?.pastDueAmount),
-    monthlyPayment: moneyToNumber(acc?.monthlyPayment),
-    chargeOffAmount: moneyToNumber(acc?.chargeOffAmount),
+  const balance: NormalizedCollectionBalance = {
+    amount: moneyToNumber(acc?.amount.amount),
   };
 
-  const dates: NormalizedDates = {
+  const dates: NormalizedCollectionDates = {
     reportedDate: dateToISO(acc?.reportedDate),
-    dateOpened: dateToISO(acc?.dateOpened),
-    dateClosed: dateToISO(acc?.dateClosed),
-    lastActivityDate: dateToISO(acc?.lastActivityDate),
+    assignedDate: dateToISO(acc?.assignedDate),
+    balanceDate: dateToISO(acc?.balanceDate),
+    statusDate: dateToISO(acc?.statusDate),
   };
-
-  const comments = (acc?.comments ?? null) as unknown | null;
-  const contactInformation = (acc?.contactInformation ?? null) as unknown | null;
 
   const providerNorm = normalizeProvider(provider);
 
-  const tradelineKey = buildTradelineKey({
-    accountName,
+  const collectionKey = buildCollectionKey({
+    agencyClient,
     accountLast4,
-    dateOpened: dates.dateOpened,
+    reportedDate: dates.reportedDate,
     section,
   });
 
@@ -383,19 +382,14 @@ function normalizeCollectionAccount(
     section,
     sourceType: "collectionAccount",
     id,
-
-    accountName,
+    agencyClient,
     accountLast4,
     accountNumberRaw,
-    isNegative,
-
-    balances,
+    accountDesignatorCode,
+    status,
+    balance,
     dates,
-
-    tradelineKey,
-
-    comments,
-    contactInformation,
+    collectionKey,
   };
 }
 
@@ -406,75 +400,104 @@ function normalizeInquiry(
   const acc = (rawAcc ?? {}) as Record<string, any>;
   const { provider, section } = meta;
 
-  const id = normalizeText(acc?.id) || "Unknown";
+  const type = normalizeText(acc?.type);
+  const reportedDate = dateToISO(acc?.reportedDate);
+  const contactInformation = normalizeText(acc?.contactInformation?.contactName);
 
-  // These key names vary a lot across providers, so stay loose.
-  const subscriberName =
-    normalizeText(acc?.subscriberName) ||
-    normalizeText(acc?.inquirySubscriberName) ||
-    normalizeText(acc?.creditorName) ||
-    normalizeText(acc?.companyName) ||
-    null;
+  const providerNorm = normalizeProvider(provider);
 
-  const inquiryType =
-    normalizeText(acc?.inquiryType) || normalizeText(acc?.type) || null;
-
-  const inquiryDate =
-    dateToISO(acc?.inquiryDate) || dateToISO(acc?.date) || null;
+  const inquiryKey = buildInquiryKey({
+    contactInformation,
+    type,
+    reportedDate,
+    section,
+  });
 
   return {
-    provider: normalizeProvider(provider),
+    provider: providerNorm,
     section,
     sourceType: "inquiry",
-    subscriberName,
-    inquiryType,
-    inquiryDate,
+    type,
+    reportedDate,
+    contactInformation,
+    inquiryKey,
   };
 }
 
+type RawPublicRecordsSection = Record<string, unknown> | null | undefined;
+
 function normalizePublicRecord(
   rawAcc: RawAccount,
-  meta: NormalizeMetaWithType
+  meta: NormalizeMetaWithType,
+  recordTypeFromBucket?: string
 ): NormalizedPublicRecord {
   const acc = (rawAcc ?? {}) as Record<string, any>;
   const { provider, section } = meta;
 
   const id = normalizeText(acc?.id) || "Unknown";
-
-  const recordType =
-    normalizeText(acc?.recordType) || normalizeText(acc?.type) || null;
-
-  const status = normalizeText(acc?.status) || null;
-
-  const filedDate =
-    dateToISO(acc?.filedDate) || dateToISO(acc?.dateFiled) || null;
-
-  const resolvedDate =
-    dateToISO(acc?.resolvedDate) || dateToISO(acc?.dateResolved) || null;
-
-  const reportedDate = dateToISO(acc?.reportedDate) || null;
-
-  const amount =
-    moneyToNumber(acc?.amount) ??
-    moneyToNumber(acc?.recordAmount) ??
-    moneyToNumber(acc?.liabilityAmount) ??
-    null;
-
+  const filedDate = dateToISO(acc?.filedDate);
+  const dispositionStatus = normalizeText(acc?.dispositionStatus?.code);
   const courtName = normalizeText(acc?.courtName) || null;
+  const publicRecordType = recordTypeFromBucket ?? null;
+
+  const providerNorm = normalizeProvider(provider);
+
+  const publicRecordKey = buildPublicRecordKey({
+    id,
+    dispositionStatus,
+    filedDate,
+    section,
+  });
 
   return {
-    provider: normalizeProvider(provider),
+    provider: providerNorm,
     section,
     sourceType: "publicRecord",
+    publicRecordType,
     id,
-    recordType,
-    status,
     filedDate,
-    resolvedDate,
-    reportedDate,
-    amount,
+    dispositionStatus,
     courtName,
+    publicRecordKey,
   };
+}
+
+export function normalizePublicRecordsSection(
+  rawSection: RawPublicRecordsSection,
+  meta: { provider: string; section: string } // section should be "publicRecords"
+): NormalizedPublicRecord[] {
+  const pr = (rawSection ?? {}) as Record<string, any>;
+
+  const providerNorm = normalizeProvider(meta.provider);
+  const section = meta.section;
+
+  const out: NormalizedPublicRecord[] = [];
+
+  // Iterate each bucket like "bankruptcies", "liens", etc.
+  for (const [bucketName, bucketValue] of Object.entries(pr)) {
+    if (bucketName === "provider") continue;
+    if (!Array.isArray(bucketValue)) continue;
+
+    const recordTypeFromBucket = bucketName.endsWith("ies")
+      ? bucketName.slice(0, -3) + "y" // bankruptcies -> bankruptcy
+      : bucketName.endsWith("s")
+        ? bucketName.slice(0, -1)     // liens -> lien
+        : bucketName;
+
+    for (const item of bucketValue) {
+      if (!item || typeof item !== "object") continue;
+
+      out.push(
+        normalizePublicRecord(item as Record<string, any>, {
+          provider: providerNorm,
+          section,
+          sourceType: "publicRecord",
+        }, recordTypeFromBucket)
+      );
+    }
+  }
+
+  return out;
 }
 
 export function normalizeAccount(
@@ -496,6 +519,13 @@ export function normalizeAccount(
       return normalizeInquiry(rawAcc, meta);
 
     case "publicRecord":
+      // This is only valid when rawAcc is an individual public-record item,
+      // not the whole "publicRecords" section object.
       return normalizePublicRecord(rawAcc, meta);
+
+    default: {
+      const _exhaustive: never = sourceType;
+      throw new Error(`Unhandled sourceType: ${_exhaustive}`);
+    }
   }
 }

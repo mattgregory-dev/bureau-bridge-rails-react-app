@@ -1,5 +1,9 @@
 import { extractProviderViews } from "./steps/extractProviderViews";
-import { normalizeAccount, type NormalizedAccount } from "./steps/normalize/normalizeAccount";
+import {
+  normalizeAccount,
+  normalizePublicRecordsSection,
+  type NormalizedAccount,
+} from "./steps/normalize/normalizeAccount";
 
 type SectionName =
   | "revolvingAccounts"
@@ -18,7 +22,8 @@ type ProviderView = {
   collections?: unknown[];
   otherAccounts?: unknown[];
   inquiries?: unknown[];
-  publicRecords?: unknown[];
+  publicRecords?: Record<string, unknown> | unknown[];
+
   [key: string]: unknown;
 };
 
@@ -55,9 +60,17 @@ export function runPipeline(raw: unknown): PipelineResult {
     const provider = view?.provider ?? "UNKNOWN";
 
     return sections.flatMap((section) => {
-      const list = Array.isArray(view?.[section])
-        ? (view[section] as unknown[])
-        : [];
+      if (section === "publicRecords") {
+        // publicRecords is bucketed object, not an array
+        const rawSection = (view?.[section] ?? null) as Record<string, unknown> | null;
+
+        return normalizePublicRecordsSection(rawSection, {
+          provider,
+          section,
+        });
+      }
+
+      const list = Array.isArray(view?.[section]) ? (view[section] as unknown[]) : [];
 
       return list.map((rawAcc) =>
         normalizeAccount(rawAcc as Record<string, unknown> | null | undefined, {
@@ -66,6 +79,7 @@ export function runPipeline(raw: unknown): PipelineResult {
         })
       );
     });
+
   });
 
   return { report: { normalizedAccounts } };

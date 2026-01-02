@@ -27,7 +27,26 @@ export default function DebugPanel() {
         setRawReport(raw);
 
         const out = runPipeline(raw);
-        setItems(out.report.normalizedAccounts ?? []);
+
+        // Try a few common shapes so DebugPanel doesn't silently go empty.
+        const normalized =
+          (out as any)?.report?.normalizedAccounts ??
+          (out as any)?.report?.normalized?.accounts ??
+          (out as any)?.normalizedAccounts ??
+          (out as any)?.normalized?.accounts ??
+          [];
+
+        if (!Array.isArray(normalized)) {
+          console.error("normalizedAccounts is not an array:", normalized, "pipeline out:", out);
+          throw new Error("Pipeline output: normalizedAccounts is not an array. Check console for details.");
+        }
+
+        setItems(normalized);
+
+        // console.log("PIPELINE OUT", out);
+        // console.log("NORMALIZED COUNT", normalized.length);
+        // console.log("FIRST ITEM", normalized[0]);
+
       } catch (e) {
         setError(String(e));
         setItems([]);
@@ -223,11 +242,13 @@ export default function DebugPanel() {
                       <div className="max-h-[70vh] overflow-y-auto pr-1">
                         {filteredItems.map((a, i) => {
                           const isActive = i === safeIdx;
+
                           const label =
                             a?.tradelineKey ??
-                            `${a?.provider ?? "?"} ${a?.section ?? "?"} ${
-                              a?.accountLast4 ?? ""
-                            }`;
+                            a?.collectionKey ??
+                            a?.inquiryKey ??
+                            a?.publicRecordKey ??
+                            `${a?.provider ?? "?"} ${a?.section ?? "?"}`;
 
                           return (
                             <button

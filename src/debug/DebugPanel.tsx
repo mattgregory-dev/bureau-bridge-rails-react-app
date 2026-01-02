@@ -5,7 +5,9 @@ import { loadFixture } from "../fixtures/loadFixture";
 import { runPipeline } from "../pipeline/runPipeline";
 
 type NormalizedAccount = any;
-type ViewMode = "normalized" | "raw";
+type ViewMode = "normalized" | "raw" | "sourceTypes";
+
+type SourceTypeKey = string; // keep loose while your union evolves
 
 export default function DebugPanel() {
   const [mode, setMode] = useState<ViewMode>("normalized");
@@ -14,6 +16,9 @@ export default function DebugPanel() {
   const [items, setItems] = useState<NormalizedAccount[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [idx, setIdx] = useState(0);
+
+  // used only in sourceTypes mode
+  const [sourceFilter, setSourceFilter] = useState<SourceTypeKey | "all">("all");
 
   useEffect(() => {
     (async () => {
@@ -31,18 +36,49 @@ export default function DebugPanel() {
     })();
   }, []);
 
-  const safeIdx = useMemo(() => {
-    if (!items || items.length === 0) return 0;
-    return Math.min(idx, items.length - 1);
-  }, [idx, items]);
+  const safeItems = items ?? [];
 
-  const selected = items && items.length > 0 ? items[safeIdx] : null;
+  const itemsBySourceType = useMemo(() => {
+    const map: Record<string, NormalizedAccount[]> = {};
+    for (const a of safeItems) {
+      const key = String(a?.sourceType ?? "unknown");
+      (map[key] ??= []).push(a);
+    }
+    return map;
+  }, [safeItems]);
+
+  const sourceTypeCounts = useMemo(() => {
+    const entries = Object.entries(itemsBySourceType).map(([k, list]) => ({
+      sourceType: k,
+      count: list.length,
+    }));
+    entries.sort((a, b) => b.count - a.count);
+    return entries;
+  }, [itemsBySourceType]);
+
+  const filteredItems = useMemo(() => {
+    if (mode !== "sourceTypes") return safeItems;
+    if (sourceFilter === "all") return safeItems;
+    return itemsBySourceType[sourceFilter] ?? [];
+  }, [mode, sourceFilter, safeItems, itemsBySourceType]);
+
+  const safeIdx = useMemo(() => {
+    if (!filteredItems || filteredItems.length === 0) return 0;
+    return Math.min(idx, filteredItems.length - 1);
+  }, [idx, filteredItems]);
+
+  const selected =
+    filteredItems && filteredItems.length > 0 ? filteredItems[safeIdx] : null;
 
   const leftButton = (label: string, next: ViewMode) => {
     const isActive = mode === next;
     return (
       <button
-        onClick={() => setMode(next)}
+        onClick={() => {
+          setMode(next);
+          setIdx(0);
+          if (next !== "sourceTypes") setSourceFilter("all");
+        }}
         className={[
           "mb-2 block w-full rounded-md border px-3 py-2 text-left text-sm transition",
           isActive
@@ -56,7 +92,12 @@ export default function DebugPanel() {
   };
 
   return (
-    <AppLayout title="Debug" fullWidth showDisclosure={false} showBottomPadding={false}>
+    <AppLayout
+      title="Debug"
+      fullWidth
+      showDisclosure={false}
+      showBottomPadding={false}
+    >
       {!items ? (
         <Card>
           <CardHeader title="Loading" subtitle="Building normalized accounts" />
@@ -81,16 +122,19 @@ export default function DebugPanel() {
             <CardHeader title="Views" subtitle="Choose what to inspect" />
             <CardBody>
               {leftButton("Normalized Accounts", "normalized")}
+              {leftButton("Source Types (Counts)", "sourceTypes")}
               {leftButton("Raw Report (Unnormalized)", "raw")}
 
               {mode === "normalized" ? (
                 <div className="mt-4 text-xs text-slate-600">
-                  {items.length} normalized accounts
+                  {safeItems.length} normalized accounts
+                </div>
+              ) : mode === "sourceTypes" ? (
+                <div className="mt-4 text-xs text-slate-600">
+                  {sourceTypeCounts.length} sourceTypes detected
                 </div>
               ) : (
-                <div className="mt-4 text-xs text-slate-600">
-                  Raw fixture JSON
-                </div>
+                <div className="mt-4 text-xs text-slate-600">Raw fixture JSON</div>
               )}
             </CardBody>
           </Card>
@@ -104,7 +148,124 @@ export default function DebugPanel() {
                 </pre>
               </CardBody>
             </Card>
-          ) : items.length === 0 ? (
+          ) : mode === "sourceTypes" ? (
+            <div className="grid gap-4 md:grid-cols-[320px_1fr]">
+              <Card>
+                <CardHeader title="Source Types" subtitle="Counts and quick filter" />
+                <CardBody>
+                  <button
+                    onClick={() => {
+                      setSourceFilter("all");
+                      setIdx(0);
+                    }}
+                    className={[
+                      "mb-2 block w-full rounded-md border px-3 py-2 text-left text-sm transition",
+                      sourceFilter === "all"
+                        ? "border-slate-300 bg-slate-100"
+                        : "border-slate-200 bg-white hover:bg-slate-50",
+                    ].join(" ")}
+                  >
+                    <div className="font-medium text-slate-900">All</div>
+                    <div className="text-xs text-slate-600">
+                      {safeItems.length} items
+                    </div>
+                  </button>
+
+                  <div className="max-h-[64vh] overflow-y-auto pr-1">
+                    {sourceTypeCounts.map((x) => {
+                      const isActive = sourceFilter === x.sourceType;
+                      return (
+                        <button
+                          key={x.sourceType}
+                          onClick={() => {
+                            setSourceFilter(x.sourceType);
+                            setIdx(0);
+                          }}
+                          className={[
+                            "mb-2 block w-full rounded-md border px-3 py-2 text-left text-sm transition",
+                            isActive
+                              ? "border-slate-300 bg-slate-100"
+                              : "border-slate-200 bg-white hover:bg-slate-50",
+                          ].join(" ")}
+                        >
+                          <div className="font-medium text-slate-900">
+                            {x.sourceType}
+                          </div>
+                          <div className="text-xs text-slate-600">
+                            {x.count} items
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </CardBody>
+              </Card>
+
+              {filteredItems.length === 0 ? (
+                <Card>
+                  <CardHeader title="No data" subtitle="Filter produced 0 items" />
+                  <CardBody>
+                    <div className="text-sm text-slate-600">
+                      No accounts were produced for this sourceType.
+                    </div>
+                  </CardBody>
+                </Card>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-[360px_1fr]">
+                  <Card>
+                    <CardHeader
+                      title="Items"
+                      subtitle={`${filteredItems.length} ${
+                        sourceFilter === "all" ? "" : `(${sourceFilter})`
+                      }`}
+                    />
+                    <CardBody>
+                      <div className="max-h-[70vh] overflow-y-auto pr-1">
+                        {filteredItems.map((a, i) => {
+                          const isActive = i === safeIdx;
+                          const label =
+                            a?.tradelineKey ??
+                            `${a?.provider ?? "?"} ${a?.section ?? "?"} ${
+                              a?.accountLast4 ?? ""
+                            }`;
+
+                          return (
+                            <button
+                              key={`${i}-${label}`}
+                              onClick={() => setIdx(i)}
+                              className={[
+                                "mb-2 block w-full rounded-md border px-3 py-2 text-left text-sm transition",
+                                isActive
+                                  ? "border-slate-300 bg-slate-100"
+                                  : "border-slate-200 bg-white hover:bg-slate-50",
+                              ].join(" ")}
+                            >
+                              <div className="font-medium text-slate-900 overflow-hidden">
+                                {i}. {label}
+                              </div>
+                              <div className="text-xs text-slate-600">
+                                {(a?.sourceType ?? "unknown") as string}
+                                {a?.accountName ? ` • ${a.accountName}` : ""}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </CardBody>
+                  </Card>
+
+                  <Card>
+                    <CardHeader title="Selected Item" subtitle="Normalized JSON" />
+                    <CardBody>
+                      <pre className="m-0 max-h-[70vh] max-w-[1100px] overflow-auto rounded-md bg-zinc-900 p-3 text-sm text-green-300">
+                        {JSON.stringify(selected, null, 2)}
+                      </pre>
+                    </CardBody>
+                  </Card>
+                </div>
+              )}
+            </div>
+          ) : safeItems.length === 0 ? (
             <Card>
               <CardHeader title="No data" subtitle="normalizedAccounts is empty" />
               <CardBody>
@@ -114,14 +275,19 @@ export default function DebugPanel() {
           ) : (
             <div className="grid gap-4 md:grid-cols-[320px_1fr]">
               <Card>
-                <CardHeader title="Normalized Accounts" subtitle={`${items.length} items`} />
+                <CardHeader
+                  title="Normalized Accounts"
+                  subtitle={`${safeItems.length} items`}
+                />
                 <CardBody>
                   <div className="max-h-[70vh] overflow-y-auto pr-1">
-                    {items.map((a, i) => {
-                      const isActive = i === safeIdx;
+                    {safeItems.map((a, i) => {
+                      const isActive = i === Math.min(idx, safeItems.length - 1);
                       const label =
                         a?.tradelineKey ??
-                        `${a?.provider ?? "?"} ${a?.section ?? "?"} ${a?.accountLast4 ?? ""}`;
+                        `${a?.provider ?? "?"} ${a?.section ?? "?"} ${
+                          a?.accountLast4 ?? ""
+                        }`;
 
                       return (
                         <button
@@ -134,10 +300,11 @@ export default function DebugPanel() {
                               : "border-slate-200 bg-white hover:bg-slate-50",
                           ].join(" ")}
                         >
-                          <div className="font-medium text-slate-900">
+                          <div className="font-medium text-slate-900 overflow-hidden">
                             {i}. {label}
                           </div>
                           <div className="text-xs text-slate-600">
+                            {(a?.sourceType ?? "unknown") as string} •{" "}
                             {a?.accountName ?? "Unknown"} • {a?.accountType ?? "Unknown"}
                           </div>
                         </button>

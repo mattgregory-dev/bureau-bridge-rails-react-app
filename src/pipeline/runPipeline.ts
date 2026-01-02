@@ -6,7 +6,9 @@ type SectionName =
   | "mortgageAccounts"
   | "installmentAccounts"
   | "collections"
-  | "otherAccounts";
+  | "otherAccounts"
+  | "inquiries"
+  | "publicRecords";
 
 type ProviderView = {
   provider?: string;
@@ -15,6 +17,8 @@ type ProviderView = {
   installmentAccounts?: unknown[];
   collections?: unknown[];
   otherAccounts?: unknown[];
+  inquiries?: unknown[];
+  publicRecords?: unknown[];
   [key: string]: unknown;
 };
 
@@ -43,6 +47,8 @@ export function runPipeline(raw: unknown): PipelineResult {
     "installmentAccounts",
     "collections",
     "otherAccounts",
+    "inquiries",
+    "publicRecords",
   ];
 
   const normalizedAccounts = providerViews.flatMap((view) => {

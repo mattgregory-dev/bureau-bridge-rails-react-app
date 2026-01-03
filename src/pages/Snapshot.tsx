@@ -93,7 +93,7 @@ export default function Snapshot() {
           expanded={tradelinesExpanded}
           onExpandedChange={setTradelinesExpanded}
         >
-          <div className="grid gap-4">
+          <div className="grid gap-4 mb-3">
             <CollapsiblePanel
               title="Revolving"
               expanded={revolvingExpanded}

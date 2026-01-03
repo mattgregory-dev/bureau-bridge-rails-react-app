@@ -95,7 +95,7 @@ export function MortgageTradelinesTable({ rows }: { rows: TradelineTableRow[] })
               <SortHeader colKey="creditor" label="Creditor" />
             </th>
             <th className="py-2 pr-4">
-              <SortHeader colKey="category" label="Category" />
+              Category
             </th>
             <th className="py-2 pr-4">
               <SortHeader colKey="account" label="Account" />
@@ -107,13 +107,7 @@ export function MortgageTradelinesTable({ rows }: { rows: TradelineTableRow[] })
               <SortHeader colKey="age" label="Age" />
             </th>
             <th className="py-2 pr-4">
-              <SortHeader colKey="limit" label="Limit" />
-            </th>
-            <th className="py-2 pr-4">
               <SortHeader colKey="balance" label="Balance" />
-            </th>
-            <th className="py-2 pr-4">
-              <SortHeader colKey="utilizationPct" label="Utilization" />
             </th>
 
             {/* New sortable bureau columns */}
@@ -139,15 +133,7 @@ export function MortgageTradelinesTable({ rows }: { rows: TradelineTableRow[] })
               <td className="py-2 pr-4">•••• {r.account}</td>
               <td className="py-2 pr-4">{r.opened}</td>
               <td className="py-2 pr-4">{r.age}</td>
-              <td className="py-2 pr-4">{money(r.limit)}</td>
               <td className="py-2 pr-4">{money(r.balance)}</td>
-              <td className="py-2 pr-4">
-                {r.utilizationPct == null ? (
-                  <span className="text-slate-400">-</span>
-                ) : (
-                  <Badge tone={r.utilizationTone}>{r.utilizationPct}%</Badge>
-                )}
-              </td>
 
               {/* New bureau cells */}
               <td className="py-2 pr-2 text-center">
@@ -178,7 +164,7 @@ export function MortgageTradelinesTable({ rows }: { rows: TradelineTableRow[] })
         {/* Footer totals (still static for now) */}
         <tfoot className="border-t border-slate-200 bg-slate-50">
           <tr className="text-xs font-semibold text-slate-600">
-            <td className="py-3 pr-4" colSpan={5}>
+            <td className="py-3 pr-4" colSpan={4}>
               <div className="flex flex-col gap-1">
                 <div className="text-slate-500">
                   Subtotal <span className="font-normal">(8 grouped rows)</span>
@@ -192,10 +178,6 @@ export function MortgageTradelinesTable({ rows }: { rows: TradelineTableRow[] })
 
             <td className="py-3 pr-4 text-slate-900">$592,750</td>
             <td className="py-3 pr-4 text-slate-900">$703,500</td>
-
-            <td className="py-3 pr-4">
-              <Badge tone="slate">84%</Badge>
-            </td>
 
             {/* 3 bureau footer cells */}
             <td className="py-3 pr-2 text-center text-slate-900">—</td>

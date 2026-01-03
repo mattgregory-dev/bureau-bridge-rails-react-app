@@ -56,7 +56,7 @@ export function CardBody({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={`card-body px-4 py-4 ${className}`}>{children}</div>;
+  return <div className={`card-body px-[14px] py-[14px] pb-10px] ${className}`}>{children}</div>;
 }
 
 export function CardFooter({

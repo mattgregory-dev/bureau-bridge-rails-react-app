@@ -42,7 +42,8 @@ export function Button({
       "bg-transparent text-slate-900 hover:bg-gray-100",
 
     tableHeader:
-      "bg-slate-100 text-slate-900 hover:bg-slate-200 px-[7px] py-[7px] text-xs border border-[#d0e2f6]",
+      // bg-slate-100
+      "bg-white text-slate-900 hover:bg-slate-200 px-[7px] py-[7px] text-xs border border-[#d0e2f6]",
   };
 
   return (

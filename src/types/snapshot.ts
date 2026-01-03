@@ -6,20 +6,25 @@ export type BureauFlags = {
   TU: boolean;
 };
 
+export type UtilizationTone = "green" | "amber" | "red" | "slate";
+
 export type TradelineCategory = "Revolving" | "Mortgage" | "Installment";
 
 export type TradelineTableRow = {
   id: string;
   creditor: string;
-  category: TradelineCategory;
+  category: "Revolving" | "Mortgage" | "Installment";
+  account: string;
+  limit: number;
   balance: number;
-};
 
-export type DerogatoryRow = {
-  id: string;
-  type: "Collection" | "Late" | "Charge-off" | "Public record";
-  creditor: string;
-  amount: number;
-  date: string; // YYYY-MM
-  status: "Open" | "Closed";
+  utilizationPct: number | null;   // 0..100, null when N/A
+  utilizationTone: UtilizationTone;
+
+  opened: string | null;
+  age: string | null;
+
+  bureaus: BureauFlags;
+  bureauList: BureauCode[];
+
 };

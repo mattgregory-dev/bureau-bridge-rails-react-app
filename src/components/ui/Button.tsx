@@ -1,6 +1,6 @@
 import * as React from "react";
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "ghost";
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "tableHeader";
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
@@ -33,6 +33,9 @@ export function Button({
 
     ghost:
       "bg-transparent text-slate-900 hover:bg-gray-100",
+
+    tableHeader:
+      "bg-slate-100 text-slate-900 hover:bg-slate-200 px-[11px] py-[8px] text-sm",
   };
 
   return (

@@ -299,6 +299,7 @@ function normalizeCreditAccount(
     accountLast4,
     dateOpened: dates.dateOpened,
     section,
+    provider,
   });
 
   return {

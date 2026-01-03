@@ -3,6 +3,7 @@ export type CreditAccountKeyParts = {
   accountLast4?: string | null;
   dateOpened?: string | null;
   section?: string | null;
+  provider?: string | null;
 };
 
 export function buildCreditAccountKey({
@@ -10,6 +11,7 @@ export function buildCreditAccountKey({
   accountLast4,
   dateOpened,
   section,
+  provider,
 }: CreditAccountKeyParts): string {
   const name = (accountName || "unknown")
     .toLowerCase()
@@ -20,8 +22,9 @@ export function buildCreditAccountKey({
   const last4Part = accountLast4 || "no-last4";
   const openPart = dateOpened ? dateOpened.slice(0, 10) : "no-open";
   const sectionPart = section || "unknown-section";
+  const providerId = (provider || "unk").toLowerCase();
 
-  return `${sectionPart}:${name}:${last4Part}:${openPart}`;
+  return `${providerId}:${sectionPart}:${name}:${last4Part}:${openPart}`;
 }
 
 export type CollectionKeyParts = {

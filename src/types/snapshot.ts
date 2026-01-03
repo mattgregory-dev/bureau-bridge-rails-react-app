@@ -28,3 +28,17 @@ export type TradelineTableRow = {
   bureauList: BureauCode[];
 
 };
+
+export type TradelineTotals = {
+  totalLimit: number;
+  totalBalance: number;
+  utilizationPct: number | null;
+  utilizationTone: UtilizationTone;
+};
+
+export type TradelineFooter = {
+  subtotalGroupedRows: number;
+  totalBureauItems: number;
+  totals: TradelineTotals;
+};
+

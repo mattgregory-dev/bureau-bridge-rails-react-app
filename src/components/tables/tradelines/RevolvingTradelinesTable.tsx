@@ -1,5 +1,3 @@
-// /src/components/tables/tradelines/RevolvingTradelinesTable.tsx
-
 import type { TradelineTableRow } from "../../../types/snapshot";
 import Badge from "../../ui/Badge";
 import { computeTradelineFooter } from "../../../interpretation/tradelines/tradelineTableHelpers";
@@ -62,9 +60,7 @@ export function RevolvingTradelinesTable({ rows }: { rows: TradelineTableRow[] }
       <button
         type="button"
         onClick={() => toggleSort(colKey)}
-        className={`inline-flex items-center gap-2 hover:text-slate-700 ${
-          className ?? ""
-        }`}
+        className={`inline-flex items-center gap-2 hover:text-slate-700 ${className ?? ""}`}
       >
         <span>{label}</span>
         <span className="flex flex-col text-[8px] leading-[8px]">
@@ -95,9 +91,7 @@ export function RevolvingTradelinesTable({ rows }: { rows: TradelineTableRow[] }
             <th className="py-2 pr-4">
               <SortHeader colKey="creditor" label="Creditor" />
             </th>
-            <th className="py-2 pr-4"> 	
-              Category
-            </th>
+            <th className="py-2 pr-4">Category</th>
             <th className="py-2 pr-4">
               <SortHeader colKey="account" label="Account" />
             </th>
@@ -117,7 +111,6 @@ export function RevolvingTradelinesTable({ rows }: { rows: TradelineTableRow[] }
               <SortHeader colKey="utilizationPct" label="Utilization" />
             </th>
 
-            {/* New sortable bureau columns */}
             <th className="py-2 pr-2 text-center">
               EFX
             </th>
@@ -132,7 +125,7 @@ export function RevolvingTradelinesTable({ rows }: { rows: TradelineTableRow[] }
 
         <tbody className="divide-y divide-slate-200">
           {sortedRows.map((r) => (
-            <tr key={r.id} className="border-b border-slate-100 last:border-b-0">
+            <tr key={r.id}>
               <td className="py-2 pr-4 font-medium">{r.creditor}</td>
               <td className="py-2 pr-4">
                 <Badge tone="slate">{r.category}</Badge>
@@ -150,51 +143,67 @@ export function RevolvingTradelinesTable({ rows }: { rows: TradelineTableRow[] }
                 )}
               </td>
 
-              {/* New bureau cells */}
               <td className="py-2 pr-2 text-center">
-                {r.bureaus.EFX ? <Badge tone="slate">EFX</Badge> : <span className="text-slate-300">-</span>}
+                {r.bureaus.EFX ? (
+                  <Badge tone="slate">EFX</Badge>
+                ) : (
+                  <span className="text-slate-300">-</span>
+                )}
               </td>
               <td className="py-2 pr-2 text-center">
-                {r.bureaus.EXP ? <Badge tone="slate">EXP</Badge> : <span className="text-slate-300">-</span>}
+                {r.bureaus.EXP ? (
+                  <Badge tone="slate">EXP</Badge>
+                ) : (
+                  <span className="text-slate-300">-</span>
+                )}
               </td>
               <td className="py-2 pr-2 text-center">
-                {r.bureaus.TU ? <Badge tone="slate">TU</Badge> : <span className="text-slate-300">-</span>}
+                {r.bureaus.TU ? (
+                  <Badge tone="slate">TU</Badge>
+                ) : (
+                  <span className="text-slate-300">-</span>
+                )}
               </td>
             </tr>
           ))}
         </tbody>
 
-        {/* Footer totals (still static for now) */}
         <tfoot className="border-t border-slate-200 bg-slate-50">
           <tr className="text-xs font-semibold text-slate-600">
-            {/* spans Creditor..Age */}
             <td className="py-3 pr-4" colSpan={1}>
               <div className="flex flex-col gap-1">
-                <div className="text-slate-500">
-                  {/* Subtotal ({f.subtotalGroupedRows} grouped rows) */}
-                  Subtotal <span className="font-normal">(8 grouped rows)</span>
-                </div>
-
-                <div className="mt-1 text-slate-900">
+                {/* <div className="text-slate-500">
+                  Subtotal{" "}
+                  <span className="font-normal">({f.subtotalGroupedRows} accounts)</span>
+                </div> */}
+                <div className="mt-1 text-slate-900 text-sm">
                   <span className="font-semibold">Total</span>{" "}
-                  <span className="font-normal text-slate-500">(18 bureau items)</span>
+                    <span className="font-normal text-slate-500">
+                      ({f.totalBureauItems} {f.totalBureauItems === 1 ? "account" : "accounts"})
+                    </span>
                 </div>
               </div>
             </td>
-
             <td className="py-3 pr-2 text-slate-400">–</td>
             <td className="py-3 pr-2 text-slate-400">–</td>
             <td className="py-3 pr-2 text-slate-400">–</td>
             <td className="py-3 pr-2 text-slate-400">–</td>
-
-            <td className="py-3 pr-4 text-slate-900">$592,750</td>
-            <td className="py-3 pr-4 text-slate-900">$703,500</td>
-
+            <td className="py-3 pr-4 text-slate-900">{money(f.totals.totalLimit)}</td>
+            <td className="py-3 pr-4 text-slate-900">{money(f.totals.totalBalance)}</td>
             <td className="py-3 pr-4">
-              <Badge tone="slate">84%</Badge>
+              <div className="flex items-center justify-start gap-1.5">
+                {f.totals.utilizationPct == null ? (
+                  <span className="text-slate-400">–</span>
+                ) : (
+                  <>
+                    <Badge tone={f.totals.utilizationTone}>
+                      {f.totals.utilizationPct}%
+                    </Badge>
+                    <span className="text-xs text-slate-500">Avg Pct</span>
+                  </>
+                )}
+              </div>
             </td>
-
-            {/* 3 bureau footer cells */}
             <td className="py-3 pr-2 text-center text-slate-400">–</td>
             <td className="py-3 pr-2 text-center text-slate-400">–</td>
             <td className="py-3 pr-2 text-center text-slate-400">–</td>

@@ -1,4 +1,4 @@
-import type { TradelineTableRow, BureauCode, BureauFlags } from "../../types/snapshot";
+import type { TradelineTableRow, BureauCode, BureauFlags, UtilizationTone, TradelineTotals, TradelineFooter } from "../../types/snapshot";
 
 type AnyObj = Record<string, any>;
 
@@ -89,48 +89,6 @@ function bureauListFromFlags(flags: BureauFlags): BureauCode[] {
   if (flags.EXP) out.push("EXP");
   if (flags.TU) out.push("TU");
   return out;
-}
-
-export function computeTradelineFooter(rows: TradelineTableRow[]) {
-  // Subtotal: grouped rows you are displaying
-  const subtotalGroupedRows = rows.length;
-
-  // Total: bureau-items (if a grouped row represents multiple bureaus)
-  // Assumes `row.bureaus` is an array like ["EFX","TU"] or similar.
-  const totalBureauItems = rows.reduce((sum, r: any) => {
-    const bureaus = Array.isArray(r?.bureaus) ? r.bureaus : [];
-    return sum + (bureaus.length || 1); // if missing, count it as 1
-  }, 0);
-
-  // Money totals (include all categories)
-  const totalLimit = rows.reduce((sum, r) => sum + (r.limit ?? 0), 0);
-  const totalBalance = rows.reduce((sum, r) => sum + (r.balance ?? 0), 0);
-
-  // Utilization: usually meaningful only for Revolving
-  const revolving = rows.filter((r) => r.category === "Revolving");
-  const revolvingLimit = revolving.reduce((sum, r) => sum + (r.limit ?? 0), 0);
-  const revolvingBalance = revolving.reduce((sum, r) => sum + (r.balance ?? 0), 0);
-  const utilizationPct =
-    revolvingLimit > 0 ? Math.round((revolvingBalance / revolvingLimit) * 100) : null;
-
-  // Bureau counts (optional)
-  const bureauCounts = rows.reduce(
-    (acc, r: any) => {
-      const bureaus = Array.isArray(r?.bureaus) ? r.bureaus : [];
-      for (const b of bureaus) acc[b] = (acc[b] ?? 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>
-  );
-
-  return {
-    subtotalGroupedRows,
-    totalBureauItems,
-    totalLimit,
-    totalBalance,
-    utilizationPct, // number | null
-    bureauCounts
-  };
 }
 
 // We want a stable raw-ish account identifier, not last4.
@@ -422,7 +380,6 @@ export function installmentTradelineTableRows(normalizedAccounts: unknown): Trad
   return mergedRows;
 }
 
-
 export function mortgageTradelineTableRows(normalizedAccounts: unknown): TradelineTableRow[] {
   const list = Array.isArray(normalizedAccounts) ? (normalizedAccounts as AnyObj[]) : [];
 
@@ -555,3 +512,53 @@ export function mortgageTradelineTableRows(normalizedAccounts: unknown): Tradeli
 
   return mergedRows;
 }
+
+export function revolvingTotals(rows: TradelineTableRow[]): TradelineTotals {
+  const totalLimit = rows.reduce((sum, r) => sum + (r.limit ?? 0), 0);
+  const totalBalance = rows.reduce((sum, r) => sum + (r.balance ?? 0), 0);
+
+  const pct = utilizationPct(totalBalance, totalLimit);
+
+  return {
+    totalLimit,
+    totalBalance,
+    utilizationPct: pct,
+    utilizationTone: utilizationTone(pct),
+  };
+}
+
+// Weighted utilization totals for any tradeline rows
+export function computeTradelineTotals(rows: TradelineTableRow[]): TradelineTotals {
+  const totalLimit = rows.reduce((sum, r) => sum + (r.limit ?? 0), 0);
+  const totalBalance = rows.reduce((sum, r) => sum + (r.balance ?? 0), 0);
+
+  // weighted utilization, null if N/A
+  const utilizationPct = totalLimit > 0 ? Math.round((totalBalance / totalLimit) * 100) : null;
+
+  // Match your existing tone thresholds by importing your helper if it lives elsewhere.
+  // If utilizationTone is in this same file, keep it here.
+  const utilizationTone = utilizationPct == null ? "slate" : utilizationToneFromPct(utilizationPct);
+
+  return {
+    totalLimit,
+    totalBalance,
+    utilizationPct,
+    utilizationTone,
+  };
+}
+
+export function computeTradelineFooter(rows: TradelineTableRow[]): TradelineFooter {
+  return {
+    subtotalGroupedRows: rows.length,
+    totalBureauItems: rows.reduce((sum, r) => sum + (r.bureauList?.length ?? 0), 0),
+    totals: computeTradelineTotals(rows),
+  };
+}
+
+function utilizationToneFromPct(pct: number): "green" | "amber" | "red" | "slate" {
+  if (pct == null) return "slate";
+  if (pct < 28) return "green";
+  if (pct < 50) return "amber";
+  return "red";
+}
+

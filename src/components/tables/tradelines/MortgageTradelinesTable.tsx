@@ -110,22 +110,21 @@ export function MortgageTradelinesTable({ rows }: { rows: TradelineTableRow[] })
               <SortHeader colKey="balance" label="Balance" />
             </th>
 
-            {/* New sortable bureau columns */}
             <th className="py-2 pr-2 text-center">
-              <SortHeader colKey="hasEFX" label="EFX" className="justify-center" />
+              EFX
             </th>
             <th className="py-2 pr-2 text-center">
-              <SortHeader colKey="hasEXP" label="EXP" className="justify-center" />
+              EXP
             </th>
             <th className="py-2 pr-2 text-center">
-              <SortHeader colKey="hasTU" label="TU" className="justify-center" />
+              TU
             </th>
           </tr>
         </thead>
 
         <tbody className="divide-y divide-slate-200">
           {sortedRows.map((r) => (
-            <tr key={r.id} className="border-b border-slate-100 last:border-b-0">
+            <tr key={r.id}>
               <td className="py-2 pr-4 font-medium">{r.creditor}</td>
               <td className="py-2 pr-4">
                 <Badge tone="slate">{r.category}</Badge>
@@ -161,28 +160,30 @@ export function MortgageTradelinesTable({ rows }: { rows: TradelineTableRow[] })
           ))}
         </tbody>
 
-        {/* Footer totals (still static for now) */}
         <tfoot className="border-t border-slate-200 bg-slate-50">
           <tr className="text-xs font-semibold text-slate-600">
-            <td className="py-3 pr-4" colSpan={4}>
+            <td className="py-3 pr-4" colSpan={1}>
               <div className="flex flex-col gap-1">
-                <div className="text-slate-500">
-                  Subtotal <span className="font-normal">(8 grouped rows)</span>
-                </div>
-                <div className="text-slate-900 mt-1">
+                {/* <div className="text-slate-500">
+                  Subtotal{" "}
+                  <span className="font-normal">({f.subtotalGroupedRows} accounts)</span>
+                </div> */}
+                <div className="mt-1 text-slate-900 text-sm">
                   <span className="font-semibold">Total</span>{" "}
-                  <span className="font-normal text-slate-500">(18 bureau items)</span>
+                    <span className="font-normal text-slate-500">
+                      ({f.totalBureauItems} {f.totalBureauItems === 1 ? "account" : "accounts"})
+                    </span>
                 </div>
               </div>
             </td>
-
-            <td className="py-3 pr-4 text-slate-900">$592,750</td>
-            <td className="py-3 pr-4 text-slate-900">$703,500</td>
-
-            {/* 3 bureau footer cells */}
-            <td className="py-3 pr-2 text-center text-slate-900">—</td>
-            <td className="py-3 pr-2 text-center text-slate-900">—</td>
-            <td className="py-3 pr-2 text-center text-slate-900">—</td>
+            <td className="py-3 pr-2 text-slate-400">–</td>
+            <td className="py-3 pr-2 text-slate-400">–</td>
+            <td className="py-3 pr-2 text-slate-400">–</td>
+            <td className="py-3 pr-2 text-slate-400">–</td>
+            <td className="py-3 pr-4 text-slate-900">{money(f.totals.totalBalance)}</td>
+            <td className="py-3 pr-2 text-center text-slate-400">–</td>
+            <td className="py-3 pr-2 text-center text-slate-400">–</td>
+            <td className="py-3 pr-2 text-center text-slate-400">–</td>
           </tr>
         </tfoot>
       </table>

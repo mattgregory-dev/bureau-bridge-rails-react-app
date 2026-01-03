@@ -36,8 +36,8 @@ function utilizationPct(balance: number, limit: number): number | null {
 
 function utilizationTone(pct: number | null): TradelineTableRow["utilizationTone"] {
   if (pct == null) return "slate";
-  if (pct < 30) return "green";
-  if (pct < 70) return "amber";
+  if (pct < 28) return "green";
+  if (pct < 50) return "amber";
   return "red";
 }
 
@@ -133,108 +133,425 @@ export function computeTradelineFooter(rows: TradelineTableRow[]) {
   };
 }
 
+// We want a stable raw-ish account identifier, not last4.
+// - Strip masking chars like x, *, •
+// - Keep digits/letters only (some account numbers are not purely numeric)
+function accountNumberRawNormalized(a: AnyObj): string {
+  const raw = String(a?.accountNumberRaw ?? "");
+
+  // remove common masking characters and whitespace only
+  return raw
+    .toUpperCase()
+    .replace(/[X•*]/g, "")
+    .replace(/\s+/g, "")
+    .trim();
+}
+
+function normalizeCreditorName(name: string): string {
+  return String(name || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, " ");
+}
+
 export function revolvingTradelineTableRows(normalizedAccounts: unknown): TradelineTableRow[] {
   const list = Array.isArray(normalizedAccounts) ? (normalizedAccounts as AnyObj[]) : [];
 
-  return list
+  // 1) Build ungrouped items we need for grouping/merging
+  const ungrouped = list
     .filter((a) => a?.sourceType === "creditAccount")
     .filter((a) => a?.section === "revolvingAccounts")
     .map((a) => {
       const balance = balanceNormalized(a);
       const limit = limitNormalized(a);
-      const pct = utilizationPct(balance, limit);
 
       const openedDate = parseDate(a?.dates?.dateOpened);
-      const opened = formatOpenedYYYYMM(openedDate);
-      const age = formatAgeFromOpened(openedDate);
 
       const bureaus = bureauFlagsFromNormalized(a);
       const bureauList = bureauListFromFlags(bureaus);
 
+      const creditorName = String(a?.accountName ?? "Unknown");
+      const creditorNormalized = normalizeCreditorName(creditorName);
+
+      const accountNumberRaw = accountNumberRawNormalized(a);
+      const accountId = String(a?.id);
+
+      const category = sectionToCategory(String(a.section));
+
+      // match key: category + accountId + accountNumberRaw (mask stripped upstream)
+      const groupKey = `${category}|${accountId}|${accountNumberRaw}`;
+      console.log( groupKey );
+
       return {
-        id: String(a?.tradelineKey ?? a?.id ?? "Unknown"),
-        creditor: String(a?.accountName ?? "Unknown"),
-        category: sectionToCategory(String(a.section)),
-        account: accountLast4(a),
-        limit,
+        groupKey,
+        creditorName,
+        creditorNormalized,
+        accountNumberRaw,
+        accountId,
+        category,
         balance,
-        utilizationPct: pct,
-        utilizationTone: utilizationTone(pct),
-        opened,
-        age,
+        limit,
+        openedDate,
         bureaus,
         bureauList,
       };
     });
+
+  // 2) Group + merge
+  const groups = new Map<
+    string,
+    {
+      id: string;
+      category: TradelineTableRow["category"];
+      creditorNameTruth: string;
+      creditorNormalizedTruth: string;
+      accountNumberRaw: string;
+
+      maxLimit: number;
+      maxBalance: number;
+      earliestOpenedDate: Date | null;
+
+      bureaus: BureauFlags;
+    }
+  >();
+
+  for (const item of ungrouped) {
+    const existing = groups.get(item.groupKey);
+
+    if (!existing) {
+      groups.set(item.groupKey, {
+        id: item.groupKey,
+        category: item.category,
+        creditorNameTruth: item.creditorName,
+        creditorNormalizedTruth: item.creditorNormalized,
+        accountNumberRaw: item.accountNumberRaw,
+
+        maxLimit: item.limit ?? 0,
+        maxBalance: item.balance ?? 0,
+        earliestOpenedDate: item.openedDate ?? null,
+
+        bureaus: {
+          EFX: !!item.bureaus?.EFX,
+          EXP: !!item.bureaus?.EXP,
+          TU: !!item.bureaus?.TU,
+        },
+      });
+      continue;
+    }
+
+    // creditor source-of-truth: longest name
+    if ((item.creditorName || "").length > (existing.creditorNameTruth || "").length) {
+      existing.creditorNameTruth = item.creditorName;
+      existing.creditorNormalizedTruth = item.creditorNormalized;
+    }
+
+    // highest limit / balance
+    existing.maxLimit = Math.max(existing.maxLimit ?? 0, item.limit ?? 0);
+    existing.maxBalance = Math.max(existing.maxBalance ?? 0, item.balance ?? 0);
+
+    // earliest opened date
+    if (item.openedDate) {
+      if (!existing.earliestOpenedDate || item.openedDate < existing.earliestOpenedDate) {
+        existing.earliestOpenedDate = item.openedDate;
+      }
+    }
+
+    // union bureau flags
+    existing.bureaus.EFX = existing.bureaus.EFX || !!item.bureaus?.EFX;
+    existing.bureaus.EXP = existing.bureaus.EXP || !!item.bureaus?.EXP;
+    existing.bureaus.TU = existing.bureaus.TU || !!item.bureaus?.TU;
+  }
+
+  // 3) Convert merged groups -> TradelineTableRow[]
+  const mergedRows: TradelineTableRow[] = Array.from(groups.values()).map((g) => {
+    const opened = formatOpenedYYYYMM(g.earliestOpenedDate);
+    const age = formatAgeFromOpened(g.earliestOpenedDate);
+
+    const pct = utilizationPct(g.maxBalance, g.maxLimit);
+    const bureauList = bureauListFromFlags(g.bureaus);
+
+    return {
+      id: g.id,
+      creditor: g.creditorNameTruth,
+      category: g.category,
+      account: g.accountNumberRaw ? `•••• ${g.accountNumberRaw.slice(-4)}` : "—",
+      limit: g.maxLimit,
+      balance: g.maxBalance,
+      utilizationPct: pct,
+      utilizationTone: utilizationTone(pct),
+      opened,
+      age,
+      bureaus: g.bureaus,
+      bureauList,
+    };
+  });
+
+  return mergedRows;
 }
 
 export function installmentTradelineTableRows(normalizedAccounts: unknown): TradelineTableRow[] {
   const list = Array.isArray(normalizedAccounts) ? (normalizedAccounts as AnyObj[]) : [];
 
-  return list
+  // 1) Build ungrouped items we need for grouping/merging
+  const ungrouped = list
     .filter((a) => a?.sourceType === "creditAccount")
     .filter((a) => a?.section === "installmentAccounts")
     .map((a) => {
       const balance = balanceNormalized(a);
       const limit = limitNormalized(a);
-      const pct = utilizationPct(balance, limit);
 
       const openedDate = parseDate(a?.dates?.dateOpened);
-      const opened = formatOpenedYYYYMM(openedDate);
-      const age = formatAgeFromOpened(openedDate);
 
       const bureaus = bureauFlagsFromNormalized(a);
       const bureauList = bureauListFromFlags(bureaus);
 
+      const creditorName = String(a?.accountName ?? "Unknown");
+      const creditorNormalized = normalizeCreditorName(creditorName);
+
+      const accountNumberRaw = accountNumberRawNormalized(a);
+      const accountId = String(a?.id ?? "Unknown");
+
+      const category = sectionToCategory(String(a.section));
+
+      const groupKey = `${category}|${accountId}|${accountNumberRaw}`;
+
       return {
-        id: String(a?.tradelineKey ?? a?.id ?? "Unknown"),
-        creditor: String(a?.accountName ?? "Unknown"),
-        category: sectionToCategory(String(a.section)),
-        account: accountLast4(a),
-        limit,
+        groupKey,
+        creditorName,
+        creditorNormalized,
+        accountNumberRaw,
+        accountId,
+        category,
         balance,
-        utilizationPct: pct,
-        utilizationTone: utilizationTone(pct),
-        opened,
-        age,
+        limit,
+        openedDate,
         bureaus,
         bureauList,
       };
     });
+
+  // 2) Group + merge
+  const groups = new Map<
+    string,
+    {
+      id: string;
+      category: TradelineTableRow["category"];
+      creditorNameTruth: string;
+      creditorNormalizedTruth: string;
+      accountNumberRaw: string;
+
+      maxLimit: number;
+      maxBalance: number;
+      earliestOpenedDate: Date | null;
+
+      bureaus: BureauFlags;
+    }
+  >();
+
+  for (const item of ungrouped) {
+    const existing = groups.get(item.groupKey);
+
+    if (!existing) {
+      groups.set(item.groupKey, {
+        id: item.groupKey,
+        category: item.category,
+        creditorNameTruth: item.creditorName,
+        creditorNormalizedTruth: item.creditorNormalized,
+        accountNumberRaw: item.accountNumberRaw,
+
+        maxLimit: item.limit ?? 0,
+        maxBalance: item.balance ?? 0,
+        earliestOpenedDate: item.openedDate ?? null,
+
+        bureaus: {
+          EFX: !!item.bureaus?.EFX,
+          EXP: !!item.bureaus?.EXP,
+          TU: !!item.bureaus?.TU,
+        },
+      });
+      continue;
+    }
+
+    // Creditor source-of-truth: longest name
+    if ((item.creditorName || "").length > (existing.creditorNameTruth || "").length) {
+      existing.creditorNameTruth = item.creditorName;
+      existing.creditorNormalizedTruth = item.creditorNormalized;
+    }
+
+    // Highest limit / balance
+    existing.maxLimit = Math.max(existing.maxLimit ?? 0, item.limit ?? 0);
+    existing.maxBalance = Math.max(existing.maxBalance ?? 0, item.balance ?? 0);
+
+    // Earliest opened date
+    if (item.openedDate) {
+      if (!existing.earliestOpenedDate || item.openedDate < existing.earliestOpenedDate) {
+        existing.earliestOpenedDate = item.openedDate;
+      }
+    }
+
+    // Union bureau flags
+    existing.bureaus.EFX = existing.bureaus.EFX || !!item.bureaus?.EFX;
+    existing.bureaus.EXP = existing.bureaus.EXP || !!item.bureaus?.EXP;
+    existing.bureaus.TU = existing.bureaus.TU || !!item.bureaus?.TU;
+  }
+
+  // 3) Convert merged groups -> TradelineTableRow[]
+  const mergedRows: TradelineTableRow[] = Array.from(groups.values()).map((g) => {
+    const opened = formatOpenedYYYYMM(g.earliestOpenedDate);
+    const age = formatAgeFromOpened(g.earliestOpenedDate);
+
+    const pct = utilizationPct(g.maxBalance, g.maxLimit);
+    const bureauList = bureauListFromFlags(g.bureaus);
+
+    return {
+      id: g.id,
+      creditor: g.creditorNameTruth,
+      category: g.category,
+      account: g.accountNumberRaw ? `•••• ${g.accountNumberRaw.slice(-4)}` : "—",
+      limit: g.maxLimit,
+      balance: g.maxBalance,
+      utilizationPct: pct,
+      utilizationTone: utilizationTone(pct),
+      opened,
+      age,
+      bureaus: g.bureaus,
+      bureauList,
+    };
+  });
+
+  return mergedRows;
 }
+
 
 export function mortgageTradelineTableRows(normalizedAccounts: unknown): TradelineTableRow[] {
   const list = Array.isArray(normalizedAccounts) ? (normalizedAccounts as AnyObj[]) : [];
 
-  return list
+  // 1) Build ungrouped items we need for grouping/merging
+  const ungrouped = list
     .filter((a) => a?.sourceType === "creditAccount")
     .filter((a) => a?.section === "mortgageAccounts")
     .map((a) => {
       const balance = balanceNormalized(a);
       const limit = limitNormalized(a);
-      const pct = utilizationPct(balance, limit);
 
       const openedDate = parseDate(a?.dates?.dateOpened);
-      const opened = formatOpenedYYYYMM(openedDate);
-      const age = formatAgeFromOpened(openedDate);
 
       const bureaus = bureauFlagsFromNormalized(a);
       const bureauList = bureauListFromFlags(bureaus);
 
+      const creditorName = String(a?.accountName ?? "Unknown");
+      const creditorNormalized = normalizeCreditorName(creditorName);
+
+      const accountNumberRaw = accountNumberRawNormalized(a);
+      const accountId = String(a?.id ?? "Unknown");
+
+      const category = sectionToCategory(String(a.section));
+
+      const groupKey = `${category}|${accountId}|${accountNumberRaw}`;
+
       return {
-        id: String(a?.tradelineKey ?? a?.id ?? "Unknown"),
-        creditor: String(a?.accountName ?? "Unknown"),
-        category: sectionToCategory(String(a.section)),
-        account: accountLast4(a),
-        limit,
+        groupKey,
+        creditorName,
+        creditorNormalized,
+        accountNumberRaw,
+        accountId,
+        category,
         balance,
-        utilizationPct: pct,
-        utilizationTone: utilizationTone(pct),
-        opened,
-        age,
+        limit,
+        openedDate,
         bureaus,
         bureauList,
       };
     });
-}
 
+  // 2) Group + merge
+  const groups = new Map<
+    string,
+    {
+      id: string;
+      category: TradelineTableRow["category"];
+      creditorNameTruth: string;
+      creditorNormalizedTruth: string;
+      accountNumberRaw: string;
+
+      maxLimit: number;
+      maxBalance: number;
+      earliestOpenedDate: Date | null;
+
+      bureaus: BureauFlags;
+    }
+  >();
+
+  for (const item of ungrouped) {
+    const existing = groups.get(item.groupKey);
+
+    if (!existing) {
+      groups.set(item.groupKey, {
+        id: item.groupKey,
+        category: item.category,
+        creditorNameTruth: item.creditorName,
+        creditorNormalizedTruth: item.creditorNormalized,
+        accountNumberRaw: item.accountNumberRaw,
+
+        maxLimit: item.limit ?? 0,
+        maxBalance: item.balance ?? 0,
+        earliestOpenedDate: item.openedDate ?? null,
+
+        bureaus: {
+          EFX: !!item.bureaus?.EFX,
+          EXP: !!item.bureaus?.EXP,
+          TU: !!item.bureaus?.TU,
+        },
+      });
+      continue;
+    }
+
+    // Creditor source-of-truth: longest name
+    if ((item.creditorName || "").length > (existing.creditorNameTruth || "").length) {
+      existing.creditorNameTruth = item.creditorName;
+      existing.creditorNormalizedTruth = item.creditorNormalized;
+    }
+
+    // Highest limit / balance
+    existing.maxLimit = Math.max(existing.maxLimit ?? 0, item.limit ?? 0);
+    existing.maxBalance = Math.max(existing.maxBalance ?? 0, item.balance ?? 0);
+
+    // Earliest opened date
+    if (item.openedDate) {
+      if (!existing.earliestOpenedDate || item.openedDate < existing.earliestOpenedDate) {
+        existing.earliestOpenedDate = item.openedDate;
+      }
+    }
+
+    // Union bureau flags
+    existing.bureaus.EFX = existing.bureaus.EFX || !!item.bureaus?.EFX;
+    existing.bureaus.EXP = existing.bureaus.EXP || !!item.bureaus?.EXP;
+    existing.bureaus.TU = existing.bureaus.TU || !!item.bureaus?.TU;
+  }
+
+  // 3) Convert merged groups -> TradelineTableRow[]
+  const mergedRows: TradelineTableRow[] = Array.from(groups.values()).map((g) => {
+    const opened = formatOpenedYYYYMM(g.earliestOpenedDate);
+    const age = formatAgeFromOpened(g.earliestOpenedDate);
+
+    const pct = utilizationPct(g.maxBalance, g.maxLimit);
+    const bureauList = bureauListFromFlags(g.bureaus);
+
+    return {
+      id: g.id,
+      creditor: g.creditorNameTruth,
+      category: g.category,
+      account: g.accountNumberRaw ? `•••• ${g.accountNumberRaw.slice(-4)}` : "—",
+      limit: g.maxLimit,
+      balance: g.maxBalance,
+      utilizationPct: pct,
+      utilizationTone: utilizationTone(pct),
+      opened,
+      age,
+      bureaus: g.bureaus,
+      bureauList,
+    };
+  });
+
+  return mergedRows;
+}

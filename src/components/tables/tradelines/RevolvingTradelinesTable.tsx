@@ -119,13 +119,13 @@ export function RevolvingTradelinesTable({ rows }: { rows: TradelineTableRow[] }
 
             {/* New sortable bureau columns */}
             <th className="py-2 pr-2 text-center">
-              <SortHeader colKey="hasEFX" label="EFX" className="justify-center" />
+              EFX
             </th>
             <th className="py-2 pr-2 text-center">
-              <SortHeader colKey="hasEXP" label="EXP" className="justify-center" />
+              EXP
             </th>
             <th className="py-2 pr-2 text-center">
-              <SortHeader colKey="hasTU" label="TU" className="justify-center" />
+              TU
             </th>
           </tr>
         </thead>
@@ -137,7 +137,7 @@ export function RevolvingTradelinesTable({ rows }: { rows: TradelineTableRow[] }
               <td className="py-2 pr-4">
                 <Badge tone="slate">{r.category}</Badge>
               </td>
-              <td className="py-2 pr-4">•••• {r.account}</td>
+              <td className="py-2 pr-4">{r.account}</td>
               <td className="py-2 pr-4">{r.opened}</td>
               <td className="py-2 pr-4">{r.age}</td>
               <td className="py-2 pr-4">{money(r.limit)}</td>
@@ -182,10 +182,10 @@ export function RevolvingTradelinesTable({ rows }: { rows: TradelineTableRow[] }
               </div>
             </td>
 
-            <td className="py-3 pr-2 text-slate-400">—</td>
-            <td className="py-3 pr-2 text-slate-400">—</td>
-            <td className="py-3 pr-2 text-slate-400">—</td>
-            <td className="py-3 pr-2 text-slate-400">—</td>
+            <td className="py-3 pr-2 text-slate-400">–</td>
+            <td className="py-3 pr-2 text-slate-400">–</td>
+            <td className="py-3 pr-2 text-slate-400">–</td>
+            <td className="py-3 pr-2 text-slate-400">–</td>
 
             <td className="py-3 pr-4 text-slate-900">$592,750</td>
             <td className="py-3 pr-4 text-slate-900">$703,500</td>
@@ -195,9 +195,9 @@ export function RevolvingTradelinesTable({ rows }: { rows: TradelineTableRow[] }
             </td>
 
             {/* 3 bureau footer cells */}
-            <td className="py-3 pr-2 text-center text-slate-400">—</td>
-            <td className="py-3 pr-2 text-center text-slate-400">—</td>
-            <td className="py-3 pr-2 text-center text-slate-400">—</td>
+            <td className="py-3 pr-2 text-center text-slate-400">–</td>
+            <td className="py-3 pr-2 text-center text-slate-400">–</td>
+            <td className="py-3 pr-2 text-center text-slate-400">–</td>
           </tr>
         </tfoot>
       </table>

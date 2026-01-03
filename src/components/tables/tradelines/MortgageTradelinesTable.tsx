@@ -130,7 +130,7 @@ export function MortgageTradelinesTable({ rows }: { rows: TradelineTableRow[] })
               <td className="py-2 pr-4">
                 <Badge tone="slate">{r.category}</Badge>
               </td>
-              <td className="py-2 pr-4">•••• {r.account}</td>
+              <td className="py-2 pr-4">{r.account}</td>
               <td className="py-2 pr-4">{r.opened}</td>
               <td className="py-2 pr-4">{r.age}</td>
               <td className="py-2 pr-4">{money(r.balance)}</td>

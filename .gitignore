@@ -28,6 +28,21 @@ public/fixtures/
 
 # optional: pipeline work-in-progress folders if they are experimental
 src/pipeline/steps/derive/
-src/pipeline/steps/group/
 src/pipeline/steps/normalize/fieldResolvers.ts
 src/pipeline/steps/normalize/index.ts
+src/interpretation/common/
+src/interpretation/derogatories/
+src/interpretation/derogatories/toDerogatoryRows.ts
+src/interpretation/derogatories/groupDerogatories.ts
+src/interpretation/derogatories/rowBuilders.ts
+src/interpretation/latePayments/
+src/interpretation/tradlines/aggregateTradeline.ts
+src/interpretation/tradlines/groupTradelines.ts
+src/interpretation/tradlines/selectors.ts
+
+src/interpretation/tradelines/aggregateTradeline.ts
+src/interpretation/tradelines/rowBuilders.ts
+src/interpretation/tradelines/selectors.ts
+src/components/tables/TradelinesTable.tsx
+src/components/tables/TradelinesTable.bak.tsx
+src/components/tables/TradelinesTableNew.tsx

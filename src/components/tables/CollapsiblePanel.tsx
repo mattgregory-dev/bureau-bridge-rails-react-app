@@ -1,6 +1,9 @@
 import type { ReactNode } from "react";
 import { Button } from "../ui/Button";
 import { Card, CardHeader, CardBody, CardFooter } from "../ui/Card";
+import {
+  ChevronDownIcon 
+} from "@heroicons/react/24/outline";
 
 type CollapsiblePanelProps = {
   title: string;
@@ -49,14 +52,14 @@ export function CollapsiblePanel({
         className={headerClassName}
         right={
           <div className="flex items-center gap-2">
+            {right}
             <Button
               variant="tableHeader"
               onClick={() => onExpandedChange(!expanded)}
-              className="flex gap-1 collapsible-button"
+              className="collapsible-button"
             >
-              {expanded ? collapseLabel : expandLabel}
+              <ChevronDownIcon  className="h-[13px] w-[13px] text-xs" />
             </Button>
-            {right}
           </div>
         }
       />

@@ -1,3 +1,5 @@
+// /src/components/tables/tradelines/MortgageTradelinesTable.tsx
+
 import type { TradelineTableRow } from "../../../types/snapshot";
 import Badge from "../../ui/Badge";
 import { computeTradelineFooter } from "../../../interpretation/tradelines/tradelineTableHelpers";
@@ -19,15 +21,31 @@ type SortKey =
   | "age"
   | "limit"
   | "balance"
-  | "utilizationPct";
+  | "utilizationPct"
+  | "hasEFX"
+  | "hasEXP"
+  | "hasTU";
+
+type RowWithBureauSort = TradelineTableRow & {
+  hasEFX: number;
+  hasEXP: number;
+  hasTU: number;
+};
 
 export function MortgageTradelinesTable({ rows }: { rows: TradelineTableRow[] }) {
   const f = computeTradelineFooter(rows);
 
+  const rowsWithBureauSort: RowWithBureauSort[] = rows.map((r) => ({
+    ...r,
+    hasEFX: r.bureaus.EFX ? 1 : 0,
+    hasEXP: r.bureaus.EXP ? 1 : 0,
+    hasTU: r.bureaus.TU ? 1 : 0,
+  }));
+
   const { sortKey, sortDir, sortedRows, toggleSort } = useTableSort<
-    TradelineTableRow,
+    RowWithBureauSort,
     SortKey
-  >(rows, "balance", "desc");
+  >(rowsWithBureauSort, "balance", "desc");
 
   function SortHeader({
     colKey,
@@ -97,7 +115,17 @@ export function MortgageTradelinesTable({ rows }: { rows: TradelineTableRow[] })
             <th className="py-2 pr-4">
               <SortHeader colKey="utilizationPct" label="Utilization" />
             </th>
-            <th className="py-2 pr-4 text-left text-xs font-semibold text-slate-500">Bureaus</th>
+
+            {/* New sortable bureau columns */}
+            <th className="py-2 pr-2 text-center">
+              <SortHeader colKey="hasEFX" label="EFX" className="justify-center" />
+            </th>
+            <th className="py-2 pr-2 text-center">
+              <SortHeader colKey="hasEXP" label="EXP" className="justify-center" />
+            </th>
+            <th className="py-2 pr-2 text-center">
+              <SortHeader colKey="hasTU" label="TU" className="justify-center" />
+            </th>
           </tr>
         </thead>
 
@@ -120,18 +148,28 @@ export function MortgageTradelinesTable({ rows }: { rows: TradelineTableRow[] })
                   <Badge tone={r.utilizationTone}>{r.utilizationPct}%</Badge>
                 )}
               </td>
-              <td className="py-2 pr-4">
-                <div className="grid w-[132px] grid-cols-3 gap-1">
-                  <div className="flex justify-center">
-                    {r.bureaus.EFX ? <Badge tone="slate">EFX</Badge> : null}
-                  </div>
-                  <div className="flex justify-center">
-                    {r.bureaus.EXP ? <Badge tone="slate">EXP</Badge> : null}
-                  </div>
-                  <div className="flex justify-center">
-                    {r.bureaus.TU ? <Badge tone="slate">TU</Badge> : null}
-                  </div>
-                </div>
+
+              {/* New bureau cells */}
+              <td className="py-2 pr-2 text-center">
+                {r.bureaus.EFX ? (
+                  <Badge tone="slate">EFX</Badge>
+                ) : (
+                  <span className="text-slate-300">-</span>
+                )}
+              </td>
+              <td className="py-2 pr-2 text-center">
+                {r.bureaus.EXP ? (
+                  <Badge tone="slate">EXP</Badge>
+                ) : (
+                  <span className="text-slate-300">-</span>
+                )}
+              </td>
+              <td className="py-2 pr-2 text-center">
+                {r.bureaus.TU ? (
+                  <Badge tone="slate">TU</Badge>
+                ) : (
+                  <span className="text-slate-300">-</span>
+                )}
               </td>
             </tr>
           ))}
@@ -158,13 +196,11 @@ export function MortgageTradelinesTable({ rows }: { rows: TradelineTableRow[] })
             <td className="py-3 pr-4">
               <Badge tone="slate">84%</Badge>
             </td>
-            <td className="py-3 pr-4">
-              <div className="grid w-[132px] grid-cols-3 gap-1">
-                <Badge tone="bare">6</Badge>
-                <Badge tone="bare">5</Badge>
-                <Badge tone="bare">7</Badge>
-              </div>
-            </td>
+
+            {/* 3 bureau footer cells */}
+            <td className="py-3 pr-2 text-center text-slate-900">—</td>
+            <td className="py-3 pr-2 text-center text-slate-900">—</td>
+            <td className="py-3 pr-2 text-center text-slate-900">—</td>
           </tr>
         </tfoot>
       </table>

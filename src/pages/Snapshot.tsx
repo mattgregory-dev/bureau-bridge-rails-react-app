@@ -100,8 +100,9 @@ export default function Snapshot() {
               onExpandedChange={setRevolvingExpanded}
               headerClassName="bg-slate-50"
               right={
-                revolvingRows.length > TOP_N ? (
+                revolvingExpanded && revolvingRows.length > TOP_N ? (
                   <Button
+                    className="border border-[#d0e2f6]"
                     variant="tableHeader"
                     onClick={() => setRevolvingShowAll((v) => !v)}
                   >
@@ -121,8 +122,9 @@ export default function Snapshot() {
               onExpandedChange={setInstallmentExpanded}
               headerClassName="bg-slate-50"
               right={
-                installmentRows.length > TOP_N ? (
+                installmentExpanded && installmentRows.length > TOP_N ? (
                   <Button
+                    className="border border-[#d0e2f6]"
                     variant="tableHeader"
                     onClick={() => setInstallmentShowAll((v) => !v)}
                   >
@@ -142,8 +144,9 @@ export default function Snapshot() {
               onExpandedChange={setMortgageExpanded}
               headerClassName="bg-slate-50"
               right={
-                mortgageRows.length > TOP_N ? (
+                mortgageExpanded && mortgageRows.length > TOP_N ? (
                   <Button
+                    className="border border-[#d0e2f6]"
                     variant="tableHeader"
                     onClick={() => setMortgageShowAll((v) => !v)}
                   >

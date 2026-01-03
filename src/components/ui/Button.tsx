@@ -17,9 +17,16 @@ export function Button({
   ...props
 }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center rounded-md " +
+   "inline-flex items-center justify-center rounded-md " +
     "px-4 py-1.5 text-base font-semibold " +
-    "focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60";
+    "focus:outline-none focus:ring-none focus:ring-indigo-100 disabled:opacity-60";
+
+    // "inline-flex items-center justify-center rounded-md " +
+    // "px-4 py-1.5 text-base font-semibold " +
+    // "focus:outline-none " +
+    // "focus-visible:ring-2 focus-visible:ring-blue-500/40 " +
+    // "focus-visible:ring-offset-2 focus-visible:ring-offset-white " +
+    // "disabled:opacity-60";
 
   const variants: Record<ButtonVariant, string> = {
     primary:
@@ -35,7 +42,7 @@ export function Button({
       "bg-transparent text-slate-900 hover:bg-gray-100",
 
     tableHeader:
-      "bg-slate-100 text-slate-900 hover:bg-slate-200 px-[11px] py-[8px] text-sm",
+      "bg-slate-100 text-slate-900 hover:bg-slate-200 px-[7px] py-[7px] text-xs border border-[#d0e2f6]",
   };
 
   return (

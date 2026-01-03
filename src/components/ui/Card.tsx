@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 export function Card({ children }: { children: ReactNode }) {
   return (
-    <div className="card-wrapper rounded-xl border border-slate-200 bg-white">
+    <div className="card-wrapper rounded-xl border border-slate-200 bg-white overflow-hidden">
       {children}
     </div>
   );
@@ -25,10 +25,8 @@ export function CardHeader({
     <div
       className={[
         "card-header flex flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:justify-between",
-        isCollapsed
-          ? "rounded-t-xl border-b-0"
-          : "border-b border-slate-200",
-        className, // ← THIS WAS THE MISSING LINE
+        isCollapsed ? "rounded-xl border-b-0" : "rounded-t-xl border-b border-slate-200",
+        className,
       ].join(" ")}
     >
       <div className="card-title-wrapper">

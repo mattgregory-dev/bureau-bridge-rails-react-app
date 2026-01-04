@@ -15,24 +15,31 @@ export function CardHeader({
   isCollapsed = false,
   className = "",
 }: {
-  title: string;
-  subtitle?: string;
+  title: ReactNode;
+  subtitle?: ReactNode;
   right?: ReactNode;
   isCollapsed?: boolean;
   className?: string;
 }) {
+  const hasRight = !!right;
+
   return (
     <div
       className={[
-        "card-header flex flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:justify-between",
-        isCollapsed ? "rounded-xl border-b-0" : "rounded-t-xl border-b border-slate-200",
+        hasRight
+          ? "card-header flex flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:justify-between"
+          : "card-header flex flex-col items-center text-center gap-2 px-4 py-3",
+        isCollapsed
+          ? "rounded-xl border-b-0"
+          : "rounded-t-xl border-b border-slate-200",
         className,
       ].join(" ")}
     >
-      <div className="card-title-wrapper">
+      <div className={hasRight ? "card-title-wrapper" : "card-title-wrapper w-full"}>
         <div className="card-title text-sm font-semibold text-slate-900">
           {title}
         </div>
+
         {subtitle ? (
           <div className="card-subtitle mt-1 text-xs text-slate-500">
             {subtitle}

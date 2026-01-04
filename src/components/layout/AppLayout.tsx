@@ -54,7 +54,7 @@ export function AppLayout({
                 </p>
 
                 <p className="mt-3 font-bold">
-                  For personalized financial guidance, please consult a qualified financial or credit
+                  For personalized financial guidance, please consult a qualified financial
                   professional.
                 </p>
               </div>

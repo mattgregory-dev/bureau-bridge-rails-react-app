@@ -13,10 +13,22 @@ export async function api<T>(
     ...init
   });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw { status: res.status, message: text || res.statusText } satisfies ApiError;
+  let data: any = null;
+
+  try {
+    data = await res.json();
+  } catch {
+    // no body (204, etc)
   }
 
-  return (await res.json()) as T;
+  if (!res.ok) {
+    const message =
+      data?.error ||
+      (Array.isArray(data?.errors) ? data.errors.join(", ") : null) ||
+      res.statusText;
+
+    throw { status: res.status, message } satisfies ApiError;
+  }
+
+  return data as T;
 }

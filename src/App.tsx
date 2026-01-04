@@ -4,6 +4,10 @@ import { api } from "./auth";
 import Health from "./pages/Health";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import Signup from "./pages/Signup";
+import CheckEmail from "./pages/CheckEmail";
+import VerifyEmail from "./pages/VerifyEmail";
 import Snapshot from "./pages/Snapshot";
 import Readiness from "./pages/Readiness";
 import History from "./pages/History";
@@ -65,6 +69,26 @@ export default function App() {
         <Route
           path="/forgot-password"
           element={me ? <Navigate to="/snapshot" replace /> : <ForgotPassword />}
+        />
+
+        <Route
+          path="/signup"
+          element={me ? <Navigate to="/snapshot" replace /> : <Signup />}
+        />
+
+        <Route
+          path="/reset-password"
+          element={me ? <Navigate to="/snapshot" replace /> : <ResetPassword />}
+        />
+
+        <Route
+          path="/check-email"
+          element={me ? <Navigate to="/snapshot" replace /> : <CheckEmail />}
+        />
+
+        <Route
+          path="/verify-email"
+          element={<VerifyEmail />}
         />
 
         <Route

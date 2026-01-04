@@ -5,22 +5,12 @@ import { Button } from "../components/ui/Button";
 import logo from "../assets/logo.webp";
 import { Card, CardBody, CardHeader } from "../components/ui/Card";
 
-type Me = {
-  id: string;
-  email: string;
-  role?: string;
-  tenantId?: string | null;
-};
+type SignupResponse = { ok: boolean };
 
-type LoginProps = {
-  onLoggedIn: (me: Me) => void;
-};
-
-type LoginResponse = unknown;
-
-export default function Login({ onLoggedIn }: LoginProps) {
+export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();
@@ -28,19 +18,28 @@ export default function Login({ onLoggedIn }: LoginProps) {
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+
+    if (password !== passwordConfirmation) {
+      setError("Passwords do not match");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await api<LoginResponse>("/api/login", {
+      await api<SignupResponse>("/api/signup", {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email,
+          password,
+          password_confirmation: passwordConfirmation,
+        }),
       });
 
-      const me = await api<Me>("/api/me");
-      onLoggedIn(me);
-      nav("/dashboard");
+      // IMPORTANT: do NOT call /api/me here. User is not logged in until verified.
+      nav(`/check-email?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
-      setError(err?.message || "Login failed");
+      setError(err?.message || "Signup failed");
     } finally {
       setLoading(false);
     }
@@ -53,7 +52,7 @@ export default function Login({ onLoggedIn }: LoginProps) {
           <CardHeader
             className="items-center text-center"
             title={
-              <div className="items-center text-center">
+              <div className="flex flex-col items-center gap-2">
                 <Link to="/snapshot" className="block">
                   <img
                     src={logo}
@@ -64,18 +63,17 @@ export default function Login({ onLoggedIn }: LoginProps) {
                 <div className="text-sm text-slate-600 italic">
                   Credit readiness for life goals
                 </div>
-                <div className="text-base text-slate-600 font-semibold mt-8">
-                  Sign in to continue
+                <div className="text-base text-slate-700 font-semibold mt-2">
+                  Sign up to get started
                 </div>
               </div>
             }
           />
+
           <CardBody>
             <form onSubmit={submit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Email
-                </label>
+                <label className="block text-sm font-medium text-gray-700">Email</label>
                 <input
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -86,15 +84,25 @@ export default function Login({ onLoggedIn }: LoginProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
+                <label className="block text-sm font-medium text-gray-700">Password</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Confirm password</label>
+                <input
+                  type="password"
+                  value={passwordConfirmation}
+                  onChange={(e) => setPasswordConfirmation(e.target.value)}
+                  className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                  autoComplete="new-password"
                   required
                 />
               </div>
@@ -106,21 +114,14 @@ export default function Login({ onLoggedIn }: LoginProps) {
               )}
 
               <Button type="submit" disabled={loading} className="w-full">
-                {loading ? "Signing in…" : "Login"}
+                {loading ? "Creating account…" : "Sign up"}
               </Button>
 
-              <div className="pt-8 pb-3 text-sm text-center text-gray-600 space-y-1">
-                <div className="mb-4">
-                  <Link to="/forgot-password" className="underline">
-                    Forgot your password?
-                  </Link>
-                </div>
-                <div>
-                  Don’t have an account?{" "}
-                  <Link to="/signup" className="underline">
-                    Sign up
-                  </Link>
-                </div>
+              <div className="pt-4 text-sm text-center text-gray-600">
+                Already have an account?{" "}
+                <Link to="/login" className="underline">
+                  Log in
+                </Link>
               </div>
             </form>
           </CardBody>

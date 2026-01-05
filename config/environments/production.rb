@@ -55,29 +55,32 @@ Rails.application.configure do
 
   # Set host to be used by links generated in mailer templates.
 
-  config.action_mailer.raise_delivery_errors = true
-  config.action_mailer.perform_deliveries = true
+  # --------- Add back start
+  # Add back when reconnecting email verification  
+  # config.action_mailer.raise_delivery_errors = true
+  # config.action_mailer.perform_deliveries = true
 
-  config.action_mailer.delivery_method = :smtp
+  # config.action_mailer.delivery_method = :smtp
 
-  config.action_mailer.smtp_settings = {
-    user_name: "apikey",
-    password: ENV.fetch("SENDGRID_API_KEY"),
-    domain: ENV.fetch("APP_HOST"),
-    address: "smtp.sendgrid.net",
-    port: 2525,
-    authentication: :plain,
-    enable_starttls_auto: true
-  }
+  # config.action_mailer.smtp_settings = {
+  #   user_name: "apikey",
+  #   password: ENV.fetch("SENDGRID_API_KEY"),
+  #   domain: ENV.fetch("APP_HOST"),
+  #   address: "smtp.sendgrid.net",
+  #   port: 2525,
+  #   authentication: :plain,
+  #   enable_starttls_auto: true
+  # }
 
-  config.action_mailer.default_url_options = {
-    host: ENV.fetch("APP_HOST"),
-    protocol: "https"
-  }
+  # config.action_mailer.default_url_options = {
+  #   host: ENV.fetch("APP_HOST"),
+  #   protocol: "https"
+  # }
 
-  config.action_mailer.default_options = {
-    from: ENV.fetch("MAILER_FROM")
-  }
+  # config.action_mailer.default_options = {
+  #   from: ENV.fetch("MAILER_FROM")
+  # }
+  # --------- Add back end
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
   # config.action_mailer.smtp_settings = {

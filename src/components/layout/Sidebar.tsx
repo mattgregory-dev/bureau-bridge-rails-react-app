@@ -44,40 +44,11 @@ export function Sidebar() {
               Credit Snapshot
             </div>
         </NavLink>
-        <NavLink to="/readiness"
-          className={({ isActive }) => `${linkBase} ${isActive ? linkActive : linkInactive}`}>
-            <div className="flex items-center gap-2">
-              <ChartBarIcon className="h-5 w-5" />
-              Readiness
-            </div>
-        </NavLink>
-        <NavLink to="/history"
-          className={({ isActive }) => `${linkBase} ${isActive ? linkActive : linkInactive}`}>
-            <div className="flex items-center gap-2">
-              <ClockIcon className="h-5 w-5" />
-              Metrics History
-            </div>
-        </NavLink>
-      </nav>
-      <div className="mt-auto px-2 pb-8">
-        <div className="mb-2 border-t pt-2">
-
-            <NavLink
-              to="/settings"
-              className={({ isActive }) =>
-                `${linkBase} ${isActive ? linkActive : linkInactive}`
-              }
-            >
-              <div className="flex items-center gap-2">
-                <Cog6ToothIcon className="h-5 w-5" />
-                Settings
-              </div>
-            </NavLink>
 
 
 
 
-                <NavLink
+                {/* <NavLink
                   to="/mock/snapshot"
                   className={({ isActive }) =>
                     `${linkBase} ${isActive ? linkActive : linkInactive}`
@@ -87,7 +58,7 @@ export function Sidebar() {
                     <PaintBrushIcon className="h-5 w-5" />
                     Snapshot Mockup
                   </div>
-                </NavLink>
+                </NavLink> */}
 
                 <NavLink
                   to="/mock/readiness"
@@ -112,6 +83,47 @@ export function Sidebar() {
                     Readiness
                   </div>
                 </NavLink>
+
+
+
+
+        {/* <NavLink to="/readiness"
+          className={({ isActive }) => `${linkBase} ${isActive ? linkActive : linkInactive}`}>
+            <div className="flex items-center gap-2">
+              <ChartBarIcon className="h-5 w-5" />
+              Readiness
+            </div>
+        </NavLink>
+        <NavLink to="/history"
+          className={({ isActive }) => `${linkBase} ${isActive ? linkActive : linkInactive}`}>
+            <div className="flex items-center gap-2">
+              <ClockIcon className="h-5 w-5" />
+              Metrics History
+            </div>
+        </NavLink> */}
+
+
+
+      </nav>
+      <div className="mt-auto px-2 pb-8">
+        <div className="mb-2 border-t pt-2">
+
+            <NavLink
+              to="/settings"
+              className={({ isActive }) =>
+                `${linkBase} ${isActive ? linkActive : linkInactive}`
+              }
+            >
+              <div className="flex items-center gap-2">
+                <Cog6ToothIcon className="h-5 w-5" />
+                Settings
+              </div>
+            </NavLink>
+
+
+
+
+
 
             {devOnly && (
               <div>

@@ -1,14 +1,19 @@
 # /src/api/app/controllers/api/auth_controller.rb
 class Api::AuthController < ApplicationController
-
+  # POST /api/signup
   def signup
     user = User.new(signup_params)
 
     if user.save
-      token = user.generate_email_verification!
-      UserMailer.email_verification(user, token).deliver_now
+      # --- EMAIL VERIFICATION FLOW (re-enable later) ---
+      # token = user.generate_email_verification!
+      # UserMailer.email_verification(user, token).deliver_now
+      # render json: { ok: true }, status: :created
+      # return
 
-      render json: { ok: true }, status: :created
+      # --- DEMO FLOW (no email verification) ---
+      session[:user_id] = user.id
+      render json: { ok: true, user: { id: user.id, email: user.email } }, status: :created
     else
       render json: {
         ok: false,
@@ -27,13 +32,13 @@ class Api::AuthController < ApplicationController
       return
     end
 
-    # BLOCK UNVERIFIED USERS HERE
-    unless user.email_verified?
-      render json: { error: "email_not_verified" }, status: :forbidden
-      return
-    end
+    # --- EMAIL VERIFICATION GATE (re-enable later) ---
+    # unless user.email_verified?
+    #   render json: { error: "email_not_verified" }, status: :forbidden
+    #   return
+    # end
 
-    # ONLY VERIFIED USERS GET A SESSION
+    # ONLY VERIFIED USERS GET A SESSION (or demo users)
     session[:user_id] = user.id
     render json: { ok: true }
   end
@@ -53,7 +58,7 @@ class Api::AuthController < ApplicationController
   private
 
   def signup_params
-  base = params[:auth].presence || params
-  base.permit(:email, :password, :password_confirmation)
+    base = params[:auth].presence || params
+    base.permit(:email, :password, :password_confirmation)
   end
 end

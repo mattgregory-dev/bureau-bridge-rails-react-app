@@ -82,7 +82,9 @@ class User < ApplicationRecord
   end
 
   def email_verified?
-    email_verified_at.present?
+    # Add back when you reconnect email verification
+    # email_verified_at.present?
+    true
   end
 
   private

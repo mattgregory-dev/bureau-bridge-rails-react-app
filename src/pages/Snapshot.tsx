@@ -9,7 +9,7 @@ import { InstallmentTradelinesTable } from "../components/tables/tradelines/Inst
 import { MortgageTradelinesTable } from "../components/tables/tradelines/MortgageTradelinesTable";
 
 // fixture
-import rawPull from "../assets/fixtures/report-airplane-jefferson-2025-03.json";
+import rawPull from "../assets/fixtures/report-2025-03.json";
 
 // pipeline
 import { runPipeline } from "../pipeline/runPipeline";

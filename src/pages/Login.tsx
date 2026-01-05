@@ -38,7 +38,7 @@ export default function Login({ onLoggedIn }: LoginProps) {
 
       const me = await api<Me>("/api/me");
       onLoggedIn(me);
-      nav("/dashboard");
+      nav("/snapshot");
     } catch (err: any) {
       setError(err?.message || "Login failed");
     } finally {
@@ -110,11 +110,12 @@ export default function Login({ onLoggedIn }: LoginProps) {
               </Button>
 
               <div className="pt-8 pb-3 text-sm text-center text-gray-600 space-y-1">
-                <div className="mb-4">
+                {/* Add back after adding email verification */}
+                {/* <div className="mb-4">
                   <Link to="/forgot-password" className="underline">
                     Forgot your password?
                   </Link>
-                </div>
+                </div> */}
                 <div>
                   Don’t have an account?{" "}
                   <Link to="/signup" className="underline">

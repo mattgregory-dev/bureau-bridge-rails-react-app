@@ -36,8 +36,10 @@ export default function Signup() {
         }),
       });
 
+      // When you add email verification, re-connect this
       // IMPORTANT: do NOT call /api/me here. User is not logged in until verified.
-      nav(`/check-email?email=${encodeURIComponent(email)}`);
+      // nav(`/check-email?email=${encodeURIComponent(email)}`);
+      nav("/snapshot")
     } catch (err: any) {
       setError(err?.message || "Signup failed");
     } finally {

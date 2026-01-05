@@ -3,11 +3,11 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { api } from "./auth";
 import Health from "./pages/Health";
 import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
+//import ForgotPassword from "./pages/ForgotPassword";
+//import ResetPassword from "./pages/ResetPassword";
 import Signup from "./pages/Signup";
-import CheckEmail from "./pages/CheckEmail";
-import VerifyEmail from "./pages/VerifyEmail";
+//import CheckEmail from "./pages/CheckEmail";
+//import VerifyEmail from "./pages/VerifyEmail";
 import Snapshot from "./pages/Snapshot";
 import Readiness from "./pages/Readiness";
 import History from "./pages/History";
@@ -66,17 +66,19 @@ export default function App() {
           element={me ? <Navigate to="/snapshot" replace /> : <Login onLoggedIn={setMe} />}
         />
 
+        {/* When we reconnect this, make sure to add password reset and any other pages you added
+        
         <Route
           path="/forgot-password"
           element={me ? <Navigate to="/snapshot" replace /> : <ForgotPassword />}
-        />
+        /> */}
 
         <Route
           path="/signup"
           element={me ? <Navigate to="/snapshot" replace /> : <Signup />}
         />
 
-        <Route
+        {/* <Route
           path="/reset-password"
           element={me ? <Navigate to="/snapshot" replace /> : <ResetPassword />}
         />
@@ -89,7 +91,7 @@ export default function App() {
         <Route
           path="/verify-email"
           element={<VerifyEmail />}
-        />
+        /> */}
 
         <Route
           path="/snapshot"

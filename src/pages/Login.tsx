@@ -19,8 +19,11 @@ type LoginProps = {
 type LoginResponse = unknown;
 
 export default function Login({ onLoggedIn }: LoginProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  //const [email, setEmail] = useState("");
+  //const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("example@bureaubridge.com");
+  const [password, setPassword] = useState("F6m2gLW5PV22s"); 
+
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();

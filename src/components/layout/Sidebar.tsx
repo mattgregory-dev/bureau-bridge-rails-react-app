@@ -74,9 +74,14 @@ export function Sidebar() {
               </div>
             </NavLink>
 
-            {devOnly && (
+
+
+
+
+
+
+
               <div>
-                {/* For developers normalizing only */}
                 <NavLink
                   to="/mock/snapshot"
                   className={({ isActive }) =>
@@ -113,6 +118,9 @@ export function Sidebar() {
                   </div>
                 </NavLink>
 
+            {devOnly && (
+              <div>
+                {/* For developers normalizing only */}
                 <NavLink
                   to="/debug"
                   className={({ isActive }) =>

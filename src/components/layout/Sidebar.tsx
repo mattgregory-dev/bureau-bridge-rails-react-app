@@ -77,11 +77,6 @@ export function Sidebar() {
 
 
 
-
-
-
-
-              <div>
                 <NavLink
                   to="/mock/snapshot"
                   className={({ isActive }) =>

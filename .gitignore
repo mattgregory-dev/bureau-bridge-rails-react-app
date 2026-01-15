@@ -33,6 +33,7 @@ web/*.local
 
 # Local dev fixtures only
 web/src/assets/fixtures/
+web/public/fixtures/
 
 ########################################
 # Rails (api/)

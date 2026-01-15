@@ -48,7 +48,7 @@ export function Sidebar() {
 
 
 
-                {/* <NavLink
+                <NavLink
                   to="/mock/snapshot"
                   className={({ isActive }) =>
                     `${linkBase} ${isActive ? linkActive : linkInactive}`
@@ -58,7 +58,7 @@ export function Sidebar() {
                     <PaintBrushIcon className="h-5 w-5" />
                     Snapshot Mockup
                   </div>
-                </NavLink> */}
+                </NavLink>
 
                 <NavLink
                   to="/mock/readiness"

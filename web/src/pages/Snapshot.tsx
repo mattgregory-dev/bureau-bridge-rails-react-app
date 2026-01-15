@@ -52,13 +52,7 @@ export default function Snapshot() {
     "snapshot.tradelines.revolving.expanded",
     true
   );
-  const [revolvingShowAll, setRevolvingShowAll] = useSessionState(
-    "snapshot.tradelines.revolving.showAll",
-    false
-  );
-  const revolvingVisible = revolvingShowAll
-    ? revolvingRows
-    : revolvingRows.slice(0, TOP_N);
+  const revolvingVisible = revolvingRows;
 
   const [installmentExpanded, setInstallmentExpanded] = useSessionState(
     "snapshot.tradelines.installment.expanded",
@@ -99,19 +93,6 @@ export default function Snapshot() {
               expanded={revolvingExpanded}
               onExpandedChange={setRevolvingExpanded}
               headerClassName="bg-slate-50"
-              right={
-                revolvingExpanded && revolvingRows.length > TOP_N ? (
-                  <Button
-                    className="border border-[#d0e2f6]"
-                    variant="tableHeader"
-                    onClick={() => setRevolvingShowAll((v) => !v)}
-                  >
-                    {revolvingShowAll
-                      ? `Show top ${TOP_N}`
-                      : `Show all (${revolvingRows.length})`}
-                  </Button>
-                ) : null
-              }
             >
               <RevolvingTradelinesTable rows={revolvingVisible} />
             </CollapsiblePanel>

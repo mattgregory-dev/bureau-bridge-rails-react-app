@@ -1,0 +1,73 @@
+########################################
+# Global / OS / Editor
+########################################
+
+.DS_Store
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+.vscode/*
+!.vscode/extensions.json
+
+########################################
+# Node / React (web/)
+########################################
+
+# Logs
+web/*.log
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+web/pnpm-debug.log*
+web/lerna-debug.log*
+
+# Dependencies & builds
+web/node_modules/
+web/dist/
+web/dist-ssr/
+web/*.local
+
+# Local dev fixtures only
+web/src/assets/fixtures/
+
+########################################
+# Rails (api/)
+########################################
+
+# Bundler
+api/.bundle/
+
+# Env files
+api/.env*
+!api/.env.example
+
+# Logs & temp
+api/log/*
+api/tmp/*
+!api/log/.keep
+!api/tmp/.keep
+
+# PID files
+api/tmp/pids/*
+!api/tmp/pids/
+!api/tmp/pids/.keep
+
+# ActiveStorage / local DBs
+api/storage/*
+!api/storage/.keep
+api/tmp/storage/*
+!api/tmp/storage/
+!api/tmp/storage/.keep
+
+# Secrets
+api/config/*.key
+
+########################################
+# Shared / misc
+########################################
+
+shared/

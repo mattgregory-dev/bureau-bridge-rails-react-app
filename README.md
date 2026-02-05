@@ -27,8 +27,10 @@ The system is intentionally split into:
 
 ## Architecture at a Glance
 
+```bash
 /api → Ruby on Rails API
 /web → React application
+```
 
 **Design intent**:
 - Clear separation of concerns
